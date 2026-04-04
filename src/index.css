@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+.leaflet-control-attribution {
+  font-size: 9px;
+  background: transparent;
+  opacity: 0.6;
+}
