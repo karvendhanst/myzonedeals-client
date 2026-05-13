@@ -71,8 +71,8 @@ const Navbar = () => {
         }}>
           <LocalOfferIcon sx={{ color: "background.paper", fontSize: 18 }} />
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
-          MyZone Deals
+        <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+          MyZoneDeals.
         </Typography>
       </Box>
       <List sx={{ px: 2 }}>
@@ -170,11 +170,11 @@ const Navbar = () => {
               variant="h6"
               sx={{
                 fontWeight: 700,
-                color: "text.primary",
+                color: "text.secondary",
                 fontSize: { xs: "1.1rem", md: "1.25rem" },
               }}
             >
-              MyZone Deals
+              MyZoneDeals.
             </Typography>
           </Box>
 

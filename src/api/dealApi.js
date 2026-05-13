@@ -60,3 +60,9 @@ export const deleteDeal = async (id) => {
   const { data } = await dealClient.delete(`/${id}`);
   return data;
 };
+
+export const fetchMapDeals = async () => {
+  const { data } = await dealClient.get("/map");
+  
+  return data;
+};
