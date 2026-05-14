@@ -1,10 +1,9 @@
-/* Move zoom control to middle right */
 .leaflet-top.leaflet-right {
   top: 50%;
   transform: translateY(-50%);
 }
 
-/* Modern UI */
+
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
@@ -91,3 +90,4 @@
   margin: 0 !important;
   width: auto !important;
 }
+

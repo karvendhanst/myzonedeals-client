@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Tooltip,
   ZoomControl,
-  useMap,
 } from "react-leaflet";
 import {
   Box,
@@ -24,20 +23,44 @@ const DRAWER_BLEEDING = 64;
 
 const Home = () => {
   const { data: deals = [] } = useGetMapDeals();
-  const [selectedDeal, setSelectedDeal] = useState(null);
+  const [selectedShopDeals, setSelectedShopDeals] = useState(null);
+  const [selectedDealIndex, setSelectedDealIndex] = useState(0);
   const [open, setOpen] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  // Group deals by shopId so one marker shows all deals for that shop
+  const shopGroups = useMemo(() => {
+    const groups = {};
+    deals.forEach((deal) => {
+      if (!groups[deal.shopId]) {
+        groups[deal.shopId] = {
+          shopId: deal.shopId,
+          shopName: deal.shopName,
+          shopImage: deal.shopImage,
+          latitude: deal.latitude,
+          longitude: deal.longitude,
+          deals: [],
+        };
+      }
+      groups[deal.shopId].deals.push(deal);
+    });
+    return Object.values(groups);
+  }, [deals]);
 
-  const handleMarkerClick = (deal) => {
-    setSelectedDeal(deal);
+  const selectedDeal =
+    selectedShopDeals ? selectedShopDeals.deals[selectedDealIndex] : null;
+
+  const handleMarkerClick = (shopGroup) => {
+    setSelectedShopDeals(shopGroup);
+    setSelectedDealIndex(0);
     if (isMobile) setOpen(true);
   };
 
   const handleClose = () => {
-    setSelectedDeal(null);
+    setSelectedShopDeals(null);
+    setSelectedDealIndex(0);
     setOpen(false);
   };
 
@@ -75,7 +98,13 @@ const Home = () => {
             overflow: "hidden",
           }}
         >
-          <DealDetailPanel deal={selectedDeal} onClose={handleClose} />
+          <DealDetailPanel
+            deal={selectedDeal}
+            allDeals={selectedShopDeals?.deals}
+            selectedIndex={selectedDealIndex}
+            onSelectDeal={setSelectedDealIndex}
+            onClose={handleClose}
+          />
         </Box>
       )}
 
@@ -123,7 +152,13 @@ const Home = () => {
             </Typography>
           </Box>
           <Box sx={{ height: "100%", overflowY: "auto" }}>
-            <DealDetailPanel deal={selectedDeal} onClose={handleClose} />
+            <DealDetailPanel
+              deal={selectedDeal}
+              allDeals={selectedShopDeals?.deals}
+              selectedIndex={selectedDealIndex}
+              onSelectDeal={setSelectedDealIndex}
+              onClose={handleClose}
+            />
           </Box>
         </SwipeableDrawer>
       )}
@@ -138,47 +173,45 @@ const Home = () => {
         >
           <TileLayer
             attribution="&copy; OpenStreetMap &copy; CARTO"
-            // url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            // url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           <ZoomControl position="topright" />
 
-          {deals.map((deal) => (
+          {shopGroups.map((group) => (
             <Marker
-              key={deal._id}
-              position={[Number(deal.latitude), Number(deal.longitude)]}
+              key={group.shopId}
+              position={[Number(group.latitude), Number(group.longitude)]}
               icon={customIcon}
               eventHandlers={{
-                click: () => handleMarkerClick(deal),
+                click: () => handleMarkerClick(group),
               }}
             >
-              <Tooltip
-                direction="top"
-                offset={[0, -20]}
-                opacity={1}
-                permanent={false}
-              >
+              <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
+
                 <div className="dt-card">
                   <div className="dt-header">
                     <div className="dt-logo">
-                      <img src={deal.shopImage} alt={deal.shopName} width="100%" height="100%" />
+                      <img src={group.shopImage} alt={group.shopName} width="100%" height="100%" />
                     </div>
                     <div>
-                      <p className="dt-name">{deal.shopName}</p>
-                      <p className="dt-type">{deal.category}</p>
+                      <p className="dt-name">{group.shopName}</p>
+                      <p className="dt-type">{group.deals[0]?.category}</p>
                     </div>
                     <span className="dt-live">● LIVE</span>
                   </div>
                   <div className="dt-body">
-                    <p className="dt-label">🔥 Current Special</p>
-                    <p className="dt-deal">{deal.description}</p>
+                    <p className="dt-label">🔥 {group.deals.length} Active Deal{group.deals.length > 1 ? "s" : ""}</p>
+                    {group.deals.map((deal) => (
+                      <p key={deal._id} className="dt-deal">• {deal.description}</p>
+                    ))}
                     <div className="dt-footer">
                       <span className="dt-active">Deal Active</span>
                     </div>
                   </div>
                 </div>
               </Tooltip>
+
+              
             </Marker>
           ))}
         </MapContainer>
