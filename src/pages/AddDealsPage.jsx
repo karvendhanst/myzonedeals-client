@@ -768,7 +768,7 @@ const AddDealsPage = () => {
   const { mutate: publishDeal, isPending: submitting } = useCreateDeal(shopId, {
     onSuccess: () => {
       setSuccess(true);
-      setTimeout(() => navigate(`/shop/${shopId}/deals`), 2000);
+      setTimeout(() => navigate("/"), 2000);
     },
     onError: (err) => setErrors({ submit: err.message }),
   });
@@ -848,8 +848,10 @@ const AddDealsPage = () => {
         {/* ── Top bar ── */}
         <Box sx={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
           justifyContent: 'space-between',
+          gap: 2,
           mb: 3,
         }}>
           <Button
@@ -1025,8 +1027,6 @@ const AddDealsPage = () => {
                 borderRadius: '8px',
                 bgcolor: '#FFF8F0',
                 border: '1px solid #FDDCB5',
-                display: 'flex',
-                gap: 2,
               }}>
                 <Box>
                   <Typography sx={{ fontSize: '0.7rem', color: '#F4A261', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>

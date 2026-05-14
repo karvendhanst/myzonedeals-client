@@ -844,7 +844,7 @@
 
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, useMediaQuery } from "@mui/material";
 import { useCreateShop } from "../hooks/useCreateShop";
 
 const CATEGORIES = [
@@ -1079,6 +1079,9 @@ export default function AddShopForm() {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { mutateAsync, isPending } = useCreateShop();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
 
   const accent = theme.palette.secondary.main;
   const dark = theme.palette.primary.main;
@@ -1172,28 +1175,31 @@ export default function AddShopForm() {
       minHeight: "100vh",
       background: bg,
       display: "flex",
+      flexDirection: isMobile ? "column" : "row",
       fontFamily: ff,
     }}>
 
+
       {/* ── LEFT SIDEBAR ── */}
       <div style={{
-        width: 260,
-        minWidth: 260,
+        width: isMobile ? "100%" : 260,
+        minWidth: isMobile ? "auto" : 260,
         flexShrink: 0,
         background: dark,
         display: "flex",
         flexDirection: "column",
-        padding: "48px 28px 36px",
+        padding: isMobile ? "32px 24px" : "48px 28px 36px",
         position: "relative",
         overflow: "hidden",
       }}>
+
         {/* decorative rings */}
         <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", border: `1px solid ${accent}14`, top: -100, right: -100, pointerEvents: "none" }} />
         <div style={{ position: "absolute", width: 180, height: 180, borderRadius: "50%", border: `1px solid ${accent}0a`, bottom: 60, left: -60, pointerEvents: "none" }} />
 
         {/* Brand */}
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 48 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: isMobile ? 24 : 48 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, background: accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -1203,10 +1209,13 @@ export default function AddShopForm() {
           </div>
         </div>
 
-        {/* Illustration */}
-        <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginBottom: 32 }}>
-          <ShopSVG />
-        </div>
+        {/* Illustration - hide on mobile to save space */}
+        {!isMobile && (
+          <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginBottom: 32 }}>
+            <ShopSVG />
+          </div>
+        )}
+
 
         {/* Copy */}
         <div style={{ position: "relative", zIndex: 1 }}>
@@ -1231,28 +1240,31 @@ export default function AddShopForm() {
           </div>
         </div>
 
-        {/* Step progress at bottom */}
-        <div style={{ position: "relative", zIndex: 1, marginTop: "auto", paddingTop: 32 }}>
-          <p style={{ fontSize: 10.5, color: "rgba(255,255,255,0.28)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 10 }}>
-            Steps to go live
-          </p>
-          {["Fill in details", "Submit for review", "Start receiving orders"].map((step, i) => (
-            <div key={step} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{
-                width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                background: i === 0 ? accent : "rgba(255,255,255,0.08)",
-                border: `1.5px solid ${i === 0 ? accent : "rgba(255,255,255,0.12)"}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, fontWeight: 700, color: i === 0 ? "#fff" : "rgba(255,255,255,0.3)",
-              }}>
-                {i + 1}
+        {/* Step progress - hide on small screens */}
+        {!isSmall && (
+          <div style={{ position: "relative", zIndex: 1, marginTop: isMobile ? 24 : "auto", paddingTop: 32 }}>
+            <p style={{ fontSize: 10.5, color: "rgba(255,255,255,0.28)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 10 }}>
+              Steps to go live
+            </p>
+            {["Fill in details", "Submit for review", "Start receiving orders"].map((step, i) => (
+              <div key={step} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                  background: i === 0 ? accent : "rgba(255,255,255,0.08)",
+                  border: `1.5px solid ${i === 0 ? accent : "rgba(255,255,255,0.12)"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 10, fontWeight: 700, color: i === 0 ? "#fff" : "rgba(255,255,255,0.3)",
+                }}>
+                  {i + 1}
+                </div>
+                <span style={{ fontSize: 12, color: i === 0 ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.28)", fontWeight: i === 0 ? 600 : 400 }}>
+                  {step}
+                </span>
               </div>
-              <span style={{ fontSize: 12, color: i === 0 ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.28)", fontWeight: i === 0 ? 600 : 400 }}>
-                {step}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
       </div>
 
       {/* ── RIGHT: FORM AREA ── */}
@@ -1290,7 +1302,8 @@ export default function AddShopForm() {
         </div>
 
         {/* Form body */}
-        <form onSubmit={handleSubmit} noValidate style={{ padding: "36px 40px 60px", maxWidth: 680 }}>
+        <form onSubmit={handleSubmit} noValidate style={{ padding: isMobile ? "24px 20px 48px" : "36px 40px 60px", maxWidth: 680 }}>
+
 
           {/* ── Shop Information ── */}
           <SectionHeading theme={theme} label="Shop information" icon={
@@ -1298,7 +1311,7 @@ export default function AddShopForm() {
               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           } />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 14, marginBottom: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 200px", gap: 14, marginBottom: 28 }}>
             <Field label="Shop name" error={errors.name} theme={theme}>
               <StyledInput
                 theme={theme} name="name" value={form.name} onChange={handleChange}
@@ -1311,6 +1324,7 @@ export default function AddShopForm() {
               </StyledSelect>
             </Field>
           </div>
+
 
           {/* ── Shop Image ── */}
           <SectionHeading theme={theme} label="Shop photo" icon={
@@ -1421,7 +1435,7 @@ export default function AddShopForm() {
                 placeholder="Door no., street name, area" hasError={!!errors.street} />
             </Field>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <Field label="City" error={errors.city} theme={theme}>
               <StyledInput theme={theme} name="city" value={form.city} onChange={handleChange}
                 placeholder="e.g. Karur" hasError={!!errors.city} />
@@ -1431,7 +1445,8 @@ export default function AddShopForm() {
                 placeholder="e.g. Tamil Nadu" hasError={!!errors.state} />
             </Field>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
+
+          <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 28 }}>
             <Field label="Pincode" error={errors.pincode} theme={theme}>
               <StyledInput theme={theme} name="pincode" value={form.pincode} onChange={handleChange}
                 placeholder="6-digit pincode" maxLength={6} hasError={!!errors.pincode} />
@@ -1441,6 +1456,7 @@ export default function AddShopForm() {
             </Field>
           </div>
 
+
           {/* ── GPS Coordinates ── */}
           <SectionHeading theme={theme} label="GPS coordinates" icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1449,7 +1465,7 @@ export default function AddShopForm() {
               <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
             </svg>
           } />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 14, alignItems: "flex-end", marginBottom: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr auto", gap: 14, alignItems: "flex-end", marginBottom: 12 }}>
             <Field label="Latitude" error={errors.latitude} theme={theme}>
               <StyledInput theme={theme} name="latitude" value={form.latitude} onChange={handleChange}
                 placeholder="e.g. 10.9517" hasError={!!errors.latitude} />
@@ -1460,6 +1476,7 @@ export default function AddShopForm() {
             </Field>
             <DetectButton locating={locating} onClick={handleDetectLocation} theme={theme} />
           </div>
+
 
           {form.latitude && form.longitude && (
             <div style={{

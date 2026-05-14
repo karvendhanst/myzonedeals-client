@@ -26,6 +26,7 @@ export const useCreateDeal = (shopId, options) => {
     ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: ["shopDeals", shopId] });
+      queryClient.invalidateQueries({ queryKey: ["mapDeals"] });
       if (options?.onSuccess) {
         options.onSuccess(...args);
       }

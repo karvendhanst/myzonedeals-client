@@ -18,30 +18,18 @@ import {
 import DealDetailPanel from "../components/DealDetailPanel";
 import "../styles/map.css";
 import { customIcon } from "../components/pinIcon";
-import { fetchMapDeals } from "../api/dealApi";
+import { useGetMapDeals } from "../hooks/useGetMapDeals";
 
 const DRAWER_BLEEDING = 64;
 
 const Home = () => {
-  const [deals, setDeals] = useState([]);
+  const { data: deals = [] } = useGetMapDeals();
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [open, setOpen] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  useEffect(() => {
-    loadDeals();
-  }, []);
-
-  const loadDeals = async () => {
-    try {
-      const res = await fetchMapDeals();
-      setDeals(res.deals || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handleMarkerClick = (deal) => {
     setSelectedDeal(deal);

@@ -140,6 +140,8 @@
 import React, { useState } from 'react';
 import { useGetMyShops } from '../hooks/useGetMyShops';
 import { useNavigate } from 'react-router-dom';
+import { useTheme, useMediaQuery } from '@mui/material';
+
 
 // ─── Theme tokens (matches your MUI theme) ───────────────────────────────────
 const T = {
@@ -229,12 +231,68 @@ const SkeletonRow = ({ index }) => (
 );
 
 // ─── Shop row ─────────────────────────────────────────────────────────────────
-const ShopRow = ({ shop, index, navigate, onPendingClick }) => {
+const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
   const [hovered, setHovered] = useState(false);
+
+  if (isMobile) {
+    return (
+      <div
+        onClick={() => shop.isVerified
+          ? navigate(`/shop/${shop._id}/deals`)
+          : onPendingClick('Please wait for this shop to be verified before adding offers.')}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '16px',
+          borderBottom: `1px solid ${T.border}`,
+          background: T.bgWhite,
+          cursor: shop.isVerified ? 'pointer' : 'default',
+          opacity: shop.isVerified ? 1 : 0.8,
+        }}
+      >
+        <div style={{
+          width: 50, height: 50, borderRadius: '12px',
+          overflow: 'hidden', flexShrink: 0,
+          border: `1px solid ${T.border}`,
+          background: T.bgDefault,
+        }}>
+          <img
+            src={shop.shopImage || 'https://via.placeholder.com/50x50?text=S'}
+            alt={shop.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <div style={{
+            fontFamily: T.font, fontWeight: 700, fontSize: '15px',
+            color: T.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {shop.name}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+             <span style={{
+              padding: '2px 8px', borderRadius: 12,
+              fontSize: '10px', fontWeight: 700,
+              background: shop.isVerified ? T.successBg : T.warningBg,
+              color: shop.isVerified ? T.success : T.warning,
+            }}>
+              {shop.isVerified ? 'Verified' : 'Pending'}
+            </span>
+            <span style={{ fontSize: '11px', color: T.textSecondary, opacity: 0.7 }}>
+              {shop.category}
+            </span>
+          </div>
+        </div>
+        <div style={{ color: T.borderStrong }}>→</div>
+      </div>
+    );
+  }
 
   return (
     <div
       onClick={() => shop.isVerified
+
         ? navigate(`/shop/${shop._id}/deals`)
         : onPendingClick('Please wait for this shop to be verified before adding offers.')}
       onMouseEnter={() => setHovered(true)}
@@ -332,12 +390,17 @@ const ShopRow = ({ shop, index, navigate, onPendingClick }) => {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 const DealerDashboard = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [toastOpen, setToastOpen]     = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [filter, setFilter]           = useState('all');
   const { data: response, isLoading, error } = useGetMyShops();
   const shops = response?.data || [];
+
 
   const verified = shops.filter(s => s.isVerified).length;
   const pending  = shops.filter(s => !s.isVerified).length;
@@ -481,24 +544,27 @@ const DealerDashboard = () => {
             borderTop: 'none',
             overflow: 'hidden',
           }}>
-            {/* Col headers */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '36px 1fr 150px 170px 110px 60px',
-              gap: '0 16px', padding: '10px 20px',
-              borderBottom: `1px solid ${T.border}`,
-              background: '#F9FAFB',
-            }}>
-              {['#', 'Shop', 'Category', 'Location', 'Status', ''].map((h, i) => (
-                <span key={i} style={{
-                  fontFamily: T.font, fontWeight: 600, fontSize: '11px',
-                  color: T.textSecondary, letterSpacing: '0.04em',
-                  textTransform: 'uppercase', textAlign: i === 5 ? 'right' : 'left',
-                }}>
-                  {h}
-                </span>
-              ))}
-            </div>
+            {/* Col headers - hide on mobile */}
+            {!isMobile && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '36px 1fr 150px 170px 110px 60px',
+                gap: '0 16px', padding: '10px 20px',
+                borderBottom: `1px solid ${T.border}`,
+                background: '#F9FAFB',
+              }}>
+                {['#', 'Shop', 'Category', 'Location', 'Status', ''].map((h, i) => (
+                  <span key={i} style={{
+                    fontFamily: T.font, fontWeight: 600, fontSize: '11px',
+                    color: T.textSecondary, letterSpacing: '0.04em',
+                    textTransform: 'uppercase', textAlign: i === 5 ? 'right' : 'left',
+                  }}>
+                    {h}
+                  </span>
+                ))}
+              </div>
+            )}
+
 
             {isLoading && [0,1,2,3,4].map(i => <SkeletonRow key={i} index={i} />)}
 
@@ -541,9 +607,11 @@ const DealerDashboard = () => {
                 shop={shop}
                 index={i}
                 navigate={navigate}
+                isMobile={isMobile}
                 onPendingClick={(msg) => { setToastMessage(msg); setToastOpen(true); }}
               />
             ))}
+
 
             {!isLoading && shops.length > 0 && filtered.length === 0 && (
               <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.font, fontSize: '13px', color: T.textSecondary }}>
