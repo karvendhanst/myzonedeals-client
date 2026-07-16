@@ -71,14 +71,16 @@
   color:#FF6B35;font-weight:600;
   letter-spacing:0.8px; }
 .dt-deal { margin:0 0 12px;font-size:14px;
-  font-weight:700;color:#1a1a1a; }
+  ;color:#1a1a1a; max-width: 250px; text-wrap: wrap; }
 
 .dt-footer { display:flex;
   justify-content:space-between;align-items:center; }
 .dt-active { font-size:11px;color:#22c55e;
   font-weight:600; }
 
-
+.dt-card{
+  max-width: 250px;
+}
 
   .deal-popup .leaflet-popup-content-wrapper {
   padding: 0 !important;

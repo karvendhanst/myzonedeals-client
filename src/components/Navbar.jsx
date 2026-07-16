@@ -16,7 +16,6 @@ import {
   useTheme,
 } from "@mui/material";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import SearchIcon from "@mui/icons-material/Search";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -104,24 +103,22 @@ const Navbar = () => {
         {(token && token !== "null") && (
           <ListItem disablePadding sx={{ mb: 1 }}>
             <Button
-              variant="outlined"
-              color="error"
-              startIcon={<LogoutIcon />}
-              fullWidth
-              onClick={handleLogout}
-              sx={{
-                justifyContent: "center",
-                py: 1.5,
-                borderRadius: '12px',
-                textTransform: 'none',
-                fontWeight: 600,
-              }}
-            >
-              <ListItemText
-                primary={"Logout"}
-                primaryTypographyProps={{ fontWeight: 600 }}
-              />
-            </Button>
+  variant="outlined"
+  color="error"
+  startIcon={<LogoutIcon />}
+  fullWidth
+  onClick={handleLogout}
+  sx={{
+    justifyContent: "flex-start",
+    py: 1.5,
+    px: 2,
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 600,
+  }}
+>
+  Logout
+</Button>
           </ListItem>
         )}
       </List>
@@ -178,35 +175,6 @@ const Navbar = () => {
             </Typography>
           </Box>
 
-          {/* Search Bar - Hidden on Mobile */}
-          {!isMobile && (
-            <Box sx={{ width: "40%", mx: 2 }}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Search by area, shop, or category..."
-                size="small"
-                sx={{
-                  backgroundColor: "#F8F9FA",
-                  borderRadius: "30px",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "30px",
-                    "& fieldset": { border: "1px solid transparent" },
-                    "&:hover fieldset": { borderColor: "secondary.main" },
-                    "&.Mui-focused fieldset": { borderColor: "secondary.main" },
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-          )}
-
           {/* Nav Links & Mobile Toggle */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 3 } }}>
             {!isMobile ? (
@@ -239,6 +207,7 @@ const Navbar = () => {
                       padding: "8px 20px",
                       textTransform: "none",
                       fontWeight: 600,
+                      mr: "auto",
                     }}
                   >
                     Logout

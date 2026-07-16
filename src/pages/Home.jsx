@@ -18,6 +18,7 @@ import DealDetailPanel from "../components/DealDetailPanel";
 import "../styles/map.css";
 import { customIcon } from "../components/pinIcon";
 import { useGetMapDeals } from "../hooks/useGetMapDeals";
+import MapSearch from "../components/MapSearch";
 
 const DRAWER_BLEEDING = 64;
 
@@ -175,6 +176,9 @@ const Home = () => {
             attribution="&copy; OpenStreetMap &copy; CARTO"
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           />
+
+        <MapSearch/>
+
           <ZoomControl position="topright" />
 
           {shopGroups.map((group) => (
@@ -200,7 +204,7 @@ const Home = () => {
                     <span className="dt-live">● LIVE</span>
                   </div>
                   <div className="dt-body">
-                    <p className="dt-label">🔥 {group.deals.length} Active Deal{group.deals.length > 1 ? "s" : ""}</p>
+                    <p className="dt-label">{group.deals.length} Active Deal{group.deals.length > 1 ? "s" : ""}</p>
                     {group.deals.map((deal) => (
                       <p key={deal._id} className="dt-deal">• {deal.description}</p>
                     ))}
