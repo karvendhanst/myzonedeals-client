@@ -10,6 +10,7 @@ import StarIcon from "@mui/icons-material/Star";
 import BoltIcon from "@mui/icons-material/Bolt";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import DirectionsModal from "./DirectionsModal";
 
 /* ─── inject styles once ─── */
 const STYLES = `
@@ -305,6 +306,7 @@ const DealTabBar = ({ deals, selectedIndex, onSelect }) => (
 /* ─── MAIN COMPONENT ─── */
 const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onClose }) => {
   const [mounted, setMounted] = useState(false);
+  const [showDirections, setShowDirections] = useState(false);
 
   useEffect(() => {
     setMounted(false);
@@ -504,7 +506,7 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
           {/* CTA Buttons */}
           <Box sx={{ display: "flex", gap: 1.2, pb: 0.5 }}>
             <Button fullWidth startIcon={<DirectionsIcon sx={{ fontSize: "16px !important" }} />}
-              onClick={() => window.open(`https://maps.google.com/?q=${deal.address?.street},${deal.address?.city}`)}
+              onClick={() => setShowDirections(true)}
               sx={{
                 borderRadius: "12px", py: 1.4, textTransform: "none", fontWeight: 700,
                 fontSize: 13, fontFamily: '"Plus Jakarta Sans", sans-serif',
@@ -529,6 +531,15 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
           </Box>
         </Box>
       </Box>
+
+      {/* Directions modal — rendered outside the scrollable content so it covers full screen */}
+      <DirectionsModal
+        open={showDirections}
+        onClose={() => setShowDirections(false)}
+        shopLat={deal.latitude}
+        shopLng={deal.longitude}
+        shopName={deal.shopName}
+      />
     </Box>
   );
 };

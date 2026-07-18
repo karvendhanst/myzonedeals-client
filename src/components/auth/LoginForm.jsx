@@ -20,13 +20,13 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
-import { useLoginMutation } from '../../api/useAuthMutations';
+import { useLoginMutation,useResendOtpMutation } from '../../api/useAuthMutations';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 
 const INITIAL = { email: '', password: '' };
 
-export default function LoginForm({ onSwitchToSignup }) {
+export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
   const [tab, setTab] = useState('login');
   const [form, setForm] = useState(INITIAL);
   const [errors, setErrors] = useState({});
@@ -35,6 +35,8 @@ export default function LoginForm({ onSwitchToSignup }) {
   const { login: authLogin } = useAuthStore();
   const navigate = useNavigate();
 
+  const { mutate: resendOtp } = useResendOtpMutation();
+
   const { mutate: login, isPending, error: apiError } = useLoginMutation({
     onSuccess: (data) => {
       if (data?.token) {
@@ -42,8 +44,17 @@ export default function LoginForm({ onSwitchToSignup }) {
         navigate('/owner-dashboard');
       }
     },
+    onError: (err) => {
+      // Backend sends "Email not verified" (400) when isVerified is false.
+      // Send the dealer to the OTP screen instead of just showing an error.
+      if (err.message === 'Email not verified') {
+        resendOtp({ email: form.email });
+        if (onUnverifiedEmail) {
+          onUnverifiedEmail(form.email);
+        }
+      }
+    },
   });
-
   const handleTab = (_, val) => {
     if (val === 'signup') onSwitchToSignup();
   };

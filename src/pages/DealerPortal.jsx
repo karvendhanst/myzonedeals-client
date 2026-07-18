@@ -4,6 +4,8 @@ import LeftPanel from '../components/auth/LeftPanel';
 import SignupForm from '../components/auth/SignupForm';
 import OtpForm from '../components/auth/OtpForm';
 import LoginForm from '../components/auth/LoginForm';
+import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 
 const STEPS = {
   SIGNUP: 'signup',
@@ -14,14 +16,26 @@ const STEPS = {
 export default function DealerPortal() {
   const [step, setStep] = useState(STEPS.SIGNUP);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const navigate = useNavigate();
+  const { login: authLogin } = useAuthStore();
 
   const handleSignupSuccess = (email) => {
     setRegisteredEmail(email);
     setStep(STEPS.OTP);
   };
 
-  const handleOtpSuccess = () => {
-    setStep(STEPS.LOGIN);
+  const handleOtpSuccess = (data) => {
+    if (data?.token) {
+      authLogin(data.token);
+      navigate('/add-shop');
+    } else {
+      setStep(STEPS.LOGIN);
+    }
+  };
+
+  const handleUnverifiedEmail = (email) => {
+    setRegisteredEmail(email);
+    setStep(STEPS.OTP);
   };
 
   const handleSwitchToLogin = () => setStep(STEPS.LOGIN);
@@ -79,7 +93,10 @@ export default function DealerPortal() {
             />
           )}
           {step === STEPS.LOGIN && (
-            <LoginForm onSwitchToSignup={handleSwitchToSignup} />
+            <LoginForm 
+              onSwitchToSignup={handleSwitchToSignup} 
+              onUnverifiedEmail={handleUnverifiedEmail}
+            />
           )}
         </Box>
       </Grid>

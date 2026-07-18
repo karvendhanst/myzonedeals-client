@@ -842,8 +842,9 @@
 // }
 
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { State, City } from "country-state-city";
 import { useTheme, useMediaQuery } from "@mui/material";
 import { useCreateShop } from "../hooks/useCreateShop";
 
@@ -855,7 +856,7 @@ const CATEGORIES = [
 
 const initialForm = {
   name: "", category: "Grocery", street: "", city: "",
-  state: "", pincode: "", country: "India",
+  state: "", stateCode: "", pincode: "", country: "India",
   longitude: "", latitude: "", shopImage: null,
 };
 
@@ -905,7 +906,7 @@ function ShopSVG() {
 }
 
 /* ─── StyledInput with theme ────────────────────────────────────────── */
-function StyledInput({ theme, hasError, ...props }) {
+function StyledInput({ theme, hasError, style: extraStyle, ...props }) {
   const [focused, setFocused] = React.useState(false);
   return (
     <input
@@ -932,6 +933,7 @@ function StyledInput({ theme, hasError, ...props }) {
           : hasError
             ? "0 0 0 3px rgba(239,68,68,0.1)"
             : "none",
+        ...extraStyle,
       }}
       onFocus={e => { setFocused(true); props.onFocus?.(e); }}
       onBlur={e => { setFocused(false); props.onBlur?.(e); }}
@@ -1082,6 +1084,45 @@ export default function AddShopForm() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
 
+  // New states for address logic
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false);
+  const [states] = useState(() => State.getStatesOfCountry("IN"));
+  const [cities, setCities] = useState([]);
+
+  // Fetch cities when stateCode changes
+  useEffect(() => {
+    if (form.stateCode) {
+      setCities(City.getCitiesOfState("IN", form.stateCode));
+    } else {
+      setCities([]);
+    }
+  }, [form.stateCode]);
+
+  // Auto-fetch pincode when street and city are present
+  useEffect(() => {
+    const fetchPincode = async () => {
+      if (form.street && form.city && form.state) {
+        setIsFetchingPincode(true);
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(form.street)}&city=${encodeURIComponent(form.city)}&state=${encodeURIComponent(form.state)}&country=India&format=json&addressdetails=1`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const postCode = data[0].address?.postcode;
+            if (postCode) {
+              setForm(p => ({ ...p, pincode: postCode }));
+              setErrors(p => ({ ...p, pincode: "" }));
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch pincode", err);
+        } finally {
+          setIsFetchingPincode(false);
+        }
+      }
+    };
+    const timer = setTimeout(fetchPincode, 1000);
+    return () => clearTimeout(timer);
+  }, [form.street, form.city, form.state]);
 
   const accent = theme.palette.secondary.main;
   const dark = theme.palette.primary.main;
@@ -1094,6 +1135,20 @@ export default function AddShopForm() {
 
   const handleChange = e => {
     const { name, value } = e.target;
+    
+    if (name === 'stateCode') {
+      const selectedState = states.find(s => s.isoCode === value);
+      setForm(p => ({ 
+        ...p, 
+        stateCode: value, 
+        state: selectedState ? selectedState.name : "",
+        city: "", // reset city when state changes
+        pincode: ""
+      }));
+      setErrors(p => ({ ...p, state: "", city: "", pincode: "" }));
+      return;
+    }
+    
     setForm(p => ({ ...p, [name]: value }));
     setErrors(p => ({ ...p, [name]: "" }));
   };
@@ -1436,20 +1491,38 @@ export default function AddShopForm() {
             </Field>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 14 }}>
-            <Field label="City" error={errors.city} theme={theme}>
-              <StyledInput theme={theme} name="city" value={form.city} onChange={handleChange}
-                placeholder="e.g. Karur" hasError={!!errors.city} />
-            </Field>
             <Field label="State" error={errors.state} theme={theme}>
-              <StyledInput theme={theme} name="state" value={form.state} onChange={handleChange}
-                placeholder="e.g. Tamil Nadu" hasError={!!errors.state} />
+              <StyledSelect theme={theme} name="stateCode" value={form.stateCode} onChange={handleChange}>
+                <option value="">Select State</option>
+                {states.map(s => <option key={s.isoCode} value={s.isoCode}>{s.name}</option>)}
+              </StyledSelect>
+            </Field>
+            <Field label="City" error={errors.city} theme={theme}>
+              <StyledSelect theme={theme} name="city" value={form.city} onChange={handleChange} disabled={!form.stateCode} style={{ background: !form.stateCode ? theme.palette.background.default : "" }}>
+                <option value="">Select City</option>
+                {cities.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+              </StyledSelect>
             </Field>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 28 }}>
             <Field label="Pincode" error={errors.pincode} theme={theme}>
-              <StyledInput theme={theme} name="pincode" value={form.pincode} onChange={handleChange}
-                placeholder="6-digit pincode" maxLength={6} hasError={!!errors.pincode} />
+              <div style={{ position: "relative" }}>
+                <StyledInput theme={theme} name="pincode" value={form.pincode} readOnly disabled
+                  placeholder={isFetchingPincode ? "Fetching..." : "Auto-filled pincode"} 
+                  hasError={!!errors.pincode} 
+                  style={{ background: isFetchingPincode ? theme.palette.background.default : "#f3f4f6", cursor: "not-allowed", color: "#6b7280" }}
+                />
+                {isFetchingPincode && (
+                  <div style={{ position: "absolute", right: 12, top: 14 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={theme.palette.secondary.main} strokeWidth="2" strokeLinecap="round" style={{ animation: "spin 1s linear infinite" }}>
+                      <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                      <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
             </Field>
             <Field label="Country" theme={theme}>
               <StyledInput theme={theme} name="country" value={form.country} onChange={handleChange} />

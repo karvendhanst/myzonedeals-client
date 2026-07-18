@@ -755,8 +755,12 @@ const AddDealsPage = () => {
   const [form, setForm] = useState({
     title: '',
     description: '',
+    dealType: 'discount',
     price: '',
     dealPrice: '',
+    buyQty: '',
+    getQty: '',
+    freeItemName: '',
     validFrom: '',
     validTill: '',
     isActive: true,
@@ -781,10 +785,19 @@ const AddDealsPage = () => {
   const validate = () => {
     const e = {};
     if (!form.title.trim()) e.title = 'Title is required';
-    if (!form.price || isNaN(form.price)) e.price = 'Enter a valid price';
-    if (!form.dealPrice || isNaN(form.dealPrice)) e.dealPrice = 'Enter a valid deal price';
-    if (parseFloat(form.dealPrice) >= parseFloat(form.price))
-      e.dealPrice = 'Deal price must be less than original price';
+    if (!form.price || isNaN(form.price)) e.price = 'Enter a valid base price';
+    
+    if (form.dealType === 'discount') {
+      if (!form.dealPrice || isNaN(form.dealPrice)) e.dealPrice = 'Enter a valid deal price';
+      if (parseFloat(form.dealPrice) >= parseFloat(form.price))
+        e.dealPrice = 'Deal price must be less than original price';
+    } else if (form.dealType === 'bogo') {
+      if (!form.buyQty || isNaN(form.buyQty) || form.buyQty < 1) e.buyQty = 'Required';
+      if (!form.getQty || isNaN(form.getQty) || form.getQty < 1) e.getQty = 'Required';
+    } else if (form.dealType === 'freebie') {
+      if (!form.freeItemName.trim()) e.freeItemName = 'Free item name is required';
+    }
+
     if (!form.validFrom) e.validFrom = 'Start date required';
     if (!form.validTill) e.validTill = 'End date required';
     if (form.validFrom && form.validTill && form.validTill < form.validFrom)
@@ -795,7 +808,15 @@ const AddDealsPage = () => {
   const handleSubmit = () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    publishDeal({ ...form, images });
+
+    const payload = { ...form, images };
+    if (form.dealType === 'bogo') {
+       payload.bogoDetails = { buyQty: Number(form.buyQty), getQty: Number(form.getQty) };
+    } else if (form.dealType === 'freebie') {
+       payload.freebieDetails = { itemName: form.freeItemName };
+    }
+
+    publishDeal(payload);
   };
 
   /* ── Success State ── */
@@ -963,11 +984,47 @@ const AddDealsPage = () => {
             />
           </Box>
 
-          <SectionDivider label="Pricing" />
+          <SectionDivider label="Offer Details" />
 
-          {/* Prices */}
-          <Grid container spacing={2} sx={{ mt: 1.5, mb: 3 }}>
-            <Grid item xs={12} sm={6}>
+          {/* Offer Type Selection */}
+          <Box sx={{ mt: 2, mb: 3 }}>
+            <FieldLabel>Offer Type</FieldLabel>
+            <Box sx={{ display: 'flex', gap: 2, mt: 1, flexWrap: 'wrap' }}>
+              {[
+                { value: 'discount', label: 'Flat Discount', icon: '📉' },
+                { value: 'bogo', label: 'Buy & Get', icon: '🎁' },
+                { value: 'freebie', label: 'Free Gift', icon: '✨' },
+              ].map(opt => (
+                <Box
+                  key={opt.value}
+                  onClick={() => setForm(f => ({ ...f, dealType: opt.value }))}
+                  sx={{
+                    flex: 1,
+                    minWidth: '110px',
+                    p: 1.5,
+                    border: '2px solid',
+                    borderColor: form.dealType === opt.value ? '#F4A261' : '#E2E8F0',
+                    borderRadius: '10px',
+                    bgcolor: form.dealType === opt.value ? '#FFF8F0' : '#fff',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { borderColor: form.dealType === opt.value ? '#F4A261' : '#CBD5E1' }
+                  }}
+                >
+                  <Typography fontSize="1.2rem">{opt.icon}</Typography>
+                  <Typography fontWeight={700} fontSize="0.75rem" color={form.dealType === opt.value ? '#192235' : '#6B7280'}>
+                    {opt.label}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Prices & Offer specific fields */}
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            {/* Base Price is ALWAYS required */}
+            <Grid item xs={12} sm={form.dealType === 'discount' ? 6 : 12}>
               <FieldLabel required>Original Price</FieldLabel>
               <TextField
                 fullWidth
@@ -978,48 +1035,61 @@ const AddDealsPage = () => {
                 error={!!errors.price}
                 helperText={errors.price}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CurrencyRupeeIcon sx={{ fontSize: 16, color: '#CBD5E1' }} />
-                    </InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start"><CurrencyRupeeIcon sx={{ fontSize: 16, color: '#CBD5E1' }} /></InputAdornment>
                 }}
                 sx={inputSx}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-                <FieldLabel required>Deal Price</FieldLabel>
-                <DiscountBadge price={form.price} dealPrice={form.dealPrice} />
-              </Box>
-              <TextField
-                fullWidth
-                type="number"
-                placeholder="0.00"
-                value={form.dealPrice}
-                onChange={set('dealPrice')}
-                error={!!errors.dealPrice}
-                helperText={errors.dealPrice}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CurrencyRupeeIcon sx={{ fontSize: 16, color: '#F4A261' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  ...inputSx,
-                  '& .MuiOutlinedInput-root': {
-                    ...inputSx['& .MuiOutlinedInput-root'],
-                    '&.Mui-focused fieldset': { borderColor: '#F4A261', borderWidth: '2px' },
-                  },
-                }}
-              />
-            </Grid>
+            
+            {/* Conditional fields */}
+            {form.dealType === 'discount' && (
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+                  <FieldLabel required>Deal Price</FieldLabel>
+                  <DiscountBadge price={form.price} dealPrice={form.dealPrice} />
+                </Box>
+                <TextField
+                  fullWidth
+                  type="number"
+                  placeholder="0.00"
+                  value={form.dealPrice}
+                  onChange={set('dealPrice')}
+                  error={!!errors.dealPrice}
+                  helperText={errors.dealPrice}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start"><CurrencyRupeeIcon sx={{ fontSize: 16, color: '#F4A261' }} /></InputAdornment>
+                  }}
+                  sx={{
+                    ...inputSx,
+                    '& .MuiOutlinedInput-root': { ...inputSx['& .MuiOutlinedInput-root'], '&.Mui-focused fieldset': { borderColor: '#F4A261', borderWidth: '2px' } }
+                  }}
+                />
+              </Grid>
+            )}
+
+            {form.dealType === 'bogo' && (
+              <>
+                <Grid item xs={6} sm={6}>
+                  <FieldLabel required>Buy Qty</FieldLabel>
+                  <TextField fullWidth type="number" placeholder="1" value={form.buyQty} onChange={set('buyQty')} error={!!errors.buyQty} helperText={errors.buyQty} sx={inputSx} />
+                </Grid>
+                <Grid item xs={6} sm={6}>
+                  <FieldLabel required>Get Qty Free</FieldLabel>
+                  <TextField fullWidth type="number" placeholder="1" value={form.getQty} onChange={set('getQty')} error={!!errors.getQty} helperText={errors.getQty} sx={inputSx} />
+                </Grid>
+              </>
+            )}
+
+            {form.dealType === 'freebie' && (
+              <Grid item xs={12} sm={12}>
+                <FieldLabel required>Free Item Name</FieldLabel>
+                <TextField fullWidth placeholder="e.g. Free 1L Coke" value={form.freeItemName} onChange={set('freeItemName')} error={!!errors.freeItemName} helperText={errors.freeItemName} sx={inputSx} />
+              </Grid>
+            )}
           </Grid>
 
           {/* Savings summary — live feedback */}
-          {form.price && form.dealPrice && parseFloat(form.dealPrice) < parseFloat(form.price) && (
+          {form.dealType === 'discount' && form.price && form.dealPrice && parseFloat(form.dealPrice) < parseFloat(form.price) && (
             <Fade in>
               <Box sx={{
                 mb: 3,
