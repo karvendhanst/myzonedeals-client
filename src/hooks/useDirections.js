@@ -1,20 +1,39 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// OSRM public demo server — free, no API key required
-const OSRM_BASE = 'https://router.project-osrm.org/route/v1';
 
-// Minimum milliseconds between consecutive route re-fetches
+const OSRM_ENDPOINTS = {
+  driving: 'https://router.project-osrm.org/route/v1/driving',
+  walking: 'https://routing.openstreetmap.de/routed-foot/route/v1/foot',
+};
+
 const REFETCH_THROTTLE_MS = 10_000;
+const LOCATION_CACHE_MS = 5 * 60 * 1000;   
+const ROUTE_CACHE_MAX = 40;
+const MIN_MOVE_METRES = 30;                
 
-/**
- * Decode a polyline from OSRM's GeoJSON geometry into Leaflet [lat, lng] pairs.
- * OSRM returns [lng, lat], Leaflet expects [lat, lng].
- */
+let cachedLocation = null;
+const routeCache = new Map(); 
+
+function haversineMetres([lat1, lng1], [lat2, lng2]) {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function routeCacheKey(userLat, userLng, shopLat, shopLng, mode) {
+  const ru = `${userLat.toFixed(3)},${userLng.toFixed(3)}`; 
+  return `${ru}|${shopLat},${shopLng}|${mode}`;
+}
+
 function decodeGeoJSON(coordinates) {
   return coordinates.map(([lng, lat]) => [lat, lng]);
 }
 
-/** Format seconds → "X min" or "X h Y min" */
 export function formatDuration(seconds) {
   const mins = Math.round(seconds / 60);
   if (mins < 60) return `${mins} min`;
@@ -23,56 +42,56 @@ export function formatDuration(seconds) {
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 }
 
-/** Format metres → "X.X km" or "X m" */
 export function formatDistance(metres) {
   if (metres >= 1000) return `${(metres / 1000).toFixed(1)} km`;
   return `${Math.round(metres)} m`;
 }
 
-/**
- * useDirections
- *
- * @param {number|null} shopLat  — destination latitude
- * @param {number|null} shopLng  — destination longitude
- * @param {'driving'|'walking'} mode  — travel mode
- *
- * @returns {{
- *   userLocation: [lat, lng] | null,
- *   routeCoords:  [lat, lng][] | null,
- *   distance:     string | null,        // formatted
- *   duration:     string | null,        // formatted
- *   routeLoading: boolean,
- *   gpsLoading:   boolean,
- *   error:        string | null,
- *   permissionDenied: boolean,
- *   retry:        () => void,
- * }}
- */
 export function useDirections(shopLat, shopLng, mode = 'driving') {
-  const [userLocation, setUserLocation] = useState(null);
+  const isLocationFresh =
+    cachedLocation && Date.now() - cachedLocation.timestamp < LOCATION_CACHE_MS;
+
+  const [userLocation, setUserLocation] = useState(
+    isLocationFresh ? cachedLocation.coords : null,
+  );
   const [routeCoords, setRouteCoords] = useState(null);
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
-  const [gpsLoading, setGpsLoading] = useState(true);
+  const [gpsLoading, setGpsLoading] = useState(!isLocationFresh);
   const [routeLoading, setRouteLoading] = useState(false);
   const [error, setError] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
 
   const watchIdRef = useRef(null);
   const lastFetchRef = useRef(0);
+  const lastFetchedAtRef = useRef(null); 
   const abortRef = useRef(null);
-  const retryCountRef = useRef(0);
 
-  // ── Route fetch ────────────────────────────────────────────────────────────
   const fetchRoute = useCallback(
-    async (userLat, userLng) => {
+    async (userLat, userLng, { force = false } = {}) => {
       if (!shopLat || !shopLng) return;
 
-      const now = Date.now();
-      if (now - lastFetchRef.current < REFETCH_THROTTLE_MS) return;
-      lastFetchRef.current = now;
+      if (!force && lastFetchedAtRef.current) {
+        const moved = haversineMetres(lastFetchedAtRef.current, [userLat, userLng]);
+        if (moved < MIN_MOVE_METRES) return;
+      }
 
-      // Cancel any in-flight request
+      const key = routeCacheKey(userLat, userLng, shopLat, shopLng, mode);
+      const cached = routeCache.get(key);
+      if (cached && !force) {
+        setRouteCoords(cached.routeCoords);
+        setDistance(cached.distance);
+        setDuration(cached.duration);
+        setError(null);
+        lastFetchedAtRef.current = [userLat, userLng];
+        return; 
+      }
+
+      const now = Date.now();
+      if (!force && now - lastFetchRef.current < REFETCH_THROTTLE_MS) return;
+      lastFetchRef.current = now;
+      lastFetchedAtRef.current = [userLat, userLng];
+
       if (abortRef.current) abortRef.current.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -81,14 +100,13 @@ export function useDirections(shopLat, shopLng, mode = 'driving') {
       setError(null);
 
       try {
-        const osrmMode = mode === 'walking' ? 'foot' : 'driving';
-        const url =
-          `${OSRM_BASE}/${osrmMode}/` +
-          `${userLng},${userLat};${shopLng},${shopLat}` +
-          `?steps=false&geometries=geojson&overview=full`;
+        const base = OSRM_ENDPOINTS[mode] ?? OSRM_ENDPOINTS.driving;
+const url =
+  `${base}/` +
+  `${userLng},${userLat};${shopLng},${shopLat}` +
+  `?steps=false&geometries=geojson&overview=full`;
 
         const res = await fetch(url, { signal: controller.signal });
-
         if (!res.ok) throw new Error(`OSRM error: ${res.status}`);
 
         const json = await res.json();
@@ -97,11 +115,20 @@ export function useDirections(shopLat, shopLng, mode = 'driving') {
         }
 
         const route = json.routes[0];
-        setRouteCoords(decodeGeoJSON(route.geometry.coordinates));
-        setDistance(formatDistance(route.distance));
-        setDuration(formatDuration(route.duration));
+        const coords = decodeGeoJSON(route.geometry.coordinates);
+        const dist = formatDistance(route.distance);
+        const dur = formatDuration(route.duration);
+
+        setRouteCoords(coords);
+        setDistance(dist);
+        setDuration(dur);
+
+        routeCache.set(key, { routeCoords: coords, distance: dist, duration: dur, timestamp: now });
+        if (routeCache.size > ROUTE_CACHE_MAX) {
+          routeCache.delete(routeCache.keys().next().value); 
+        }
       } catch (err) {
-        if (err.name === 'AbortError') return; // request was cancelled — ignore
+        if (err.name === 'AbortError') return;
         setError(err.message || 'Could not calculate route. Please try again.');
       } finally {
         setRouteLoading(false);
@@ -110,75 +137,93 @@ export function useDirections(shopLat, shopLng, mode = 'driving') {
     [shopLat, shopLng, mode],
   );
 
-  // ── GPS watch ─────────────────────────────────────────────────────────────
-  const startWatch = useCallback(() => {
-    if (!('geolocation' in navigator)) {
-      setGpsLoading(false);
-      setError('Geolocation is not supported by your browser.');
-      return;
-    }
-
-    setGpsLoading(true);
-    setPermissionDenied(false);
-    setError(null);
-
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setUserLocation([lat, lng]);
+  const startWatch = useCallback(
+    ({ silent = false } = {}) => {
+      if (!('geolocation' in navigator)) {
         setGpsLoading(false);
-        fetchRoute(lat, lng);
-      },
-      (err) => {
-        setGpsLoading(false);
-        if (err.code === err.PERMISSION_DENIED) {
-          setPermissionDenied(true);
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          setError('Your location is currently unavailable. Please check your GPS signal.');
-        } else if (err.code === err.TIMEOUT) {
-          setError('Location request timed out. Please try again.');
-        } else {
-          setError('Failed to detect your location.');
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15_000,
-        maximumAge: 5_000,
-      },
-    );
-  }, [fetchRoute]);
+        setError('Geolocation is not supported by your browser.');
+        return;
+      }
 
-  // ── Re-fetch when mode changes (with existing location) ──────────────────
+      if (!silent) {
+        setGpsLoading(true);
+        setPermissionDenied(false);
+        setError(null);
+      }
+
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          cachedLocation = { coords: [lat, lng], timestamp: Date.now() };
+          setUserLocation([lat, lng]);
+          setGpsLoading(false);
+          fetchRoute(lat, lng);
+
+          if (watchIdRef.current === null) {
+            watchIdRef.current = navigator.geolocation.watchPosition(
+              (p) => {
+                const latH = p.coords.latitude;
+                const lngH = p.coords.longitude;
+                cachedLocation = { coords: [latH, lngH], timestamp: Date.now() };
+                setUserLocation([latH, lngH]);
+                fetchRoute(latH, lngH);
+              },
+              () => {}, 
+              { enableHighAccuracy: true, timeout: 15_000, maximumAge: 5_000 },
+            );
+          }
+        },
+        (err) => {
+          setGpsLoading(false);
+          if (err.code === err.PERMISSION_DENIED) setPermissionDenied(true);
+          else if (err.code === err.POSITION_UNAVAILABLE)
+            setError('Your location is currently unavailable. Please check your GPS signal.');
+          else if (err.code === err.TIMEOUT) setError('Location request timed out. Please try again.');
+          else setError('Failed to detect your location.');
+        },
+        { enableHighAccuracy: false, timeout: 8_000, maximumAge: LOCATION_CACHE_MS },
+      );
+    },
+    [fetchRoute],
+  );
+
   useEffect(() => {
     if (userLocation) {
-      lastFetchRef.current = 0; // reset throttle so mode change triggers immediately
-      fetchRoute(userLocation[0], userLocation[1]);
+      fetchRoute(userLocation[0], userLocation[1], { force: true });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, shopLat, shopLng]);
 
-  // ── Start watching on mount; clean up on unmount ─────────────────────────
   useEffect(() => {
-    startWatch();
+    if (isLocationFresh) {
+      setUserLocation(cachedLocation.coords);
+      setGpsLoading(false);
+      fetchRoute(cachedLocation.coords[0], cachedLocation.coords[1], { force: true });
+      startWatch({ silent: true }); 
+    } else {
+      startWatch();
+    }
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
       }
       if (abortRef.current) abortRef.current.abort();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Retry helper ─────────────────────────────────────────────────────────
   const retry = useCallback(() => {
-    retryCountRef.current += 1;
     setRouteCoords(null);
     setDistance(null);
     setDuration(null);
+    setPermissionDenied(false);
+    setError(null);
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
     }
     startWatch();
   }, [startWatch]);

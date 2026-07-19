@@ -65,6 +65,11 @@ const Home = () => {
     setOpen(false);
   };
 
+  // Cheapest deal per shop — used as the single price shown in the tooltip
+  // so the preview reads as "one clear number", not a list of everything.
+  const bestPriceFor = (group) =>
+    Math.min(...group.deals.map((d) => d.dealPrice));
+
   return (
     <Box
       sx={{
@@ -166,6 +171,35 @@ const Home = () => {
 
       {/* MAP */}
       <Box sx={{ flex: 1, position: "relative", height: "100%", width: "100%" }}>
+        {/* Floating context pill — gives the map a sense of scale instead of
+            being an unlabeled wall of pins */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 12,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 700,
+            bgcolor: "rgba(15,23,42,0.85)",
+            backdropFilter: "blur(8px)",
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 700,
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
+            px: 1.6,
+            py: 0.6,
+            borderRadius: "20px",
+            display: "flex",
+            alignItems: "center",
+            gap: 0.7,
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#4ade80" }} />
+          {shopGroups.length} shop{shopGroups.length !== 1 ? "s" : ""} with live deals
+        </Box>
+
         <MapContainer
           center={[10.967287, 78.061949]}
           zoom={13}
@@ -177,7 +211,7 @@ const Home = () => {
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           />
 
-        <MapSearch/>
+          <MapSearch />
 
           <ZoomControl position="topright" />
 
@@ -190,8 +224,11 @@ const Home = () => {
                 click: () => handleMarkerClick(group),
               }}
             >
+              {/* Trimmed preview: name + best price + deal count only.
+                  Full descriptions live in DealDetailPanel after tap —
+                  the tooltip used to repeat every deal's text, which is
+                  what made the map feel cluttered/confusing. */}
               <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
-
                 <div className="dt-card">
                   <div className="dt-header">
                     <div className="dt-logo">
@@ -204,18 +241,16 @@ const Home = () => {
                     <span className="dt-live">● LIVE</span>
                   </div>
                   <div className="dt-body">
-                    <p className="dt-label">{group.deals.length} Active Deal{group.deals.length > 1 ? "s" : ""}</p>
-                    {group.deals.map((deal) => (
-                      <p key={deal._id} className="dt-deal">• {deal.description}</p>
-                    ))}
+                    <p className="dt-label">
+                      From ₹{bestPriceFor(group)} · {group.deals.length} deal
+                      {group.deals.length > 1 ? "s" : ""}
+                    </p>
                     <div className="dt-footer">
-                      <span className="dt-active">Deal Active</span>
+                      <span className="dt-active">Tap for details</span>
                     </div>
                   </div>
                 </div>
               </Tooltip>
-
-              
             </Marker>
           ))}
         </MapContainer>

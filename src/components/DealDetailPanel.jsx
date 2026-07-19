@@ -310,6 +310,7 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
 
   useEffect(() => {
     setMounted(false);
+     setShowDirections(false);
     const t = setTimeout(() => setMounted(true), 30);
     return () => clearTimeout(t);
   }, [deal?._id ?? deal?.title]);
