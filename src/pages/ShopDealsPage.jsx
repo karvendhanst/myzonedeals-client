@@ -21,9 +21,7 @@ const T = {
   font:          '"Plus Jakarta Sans", sans-serif',
 };
 
-// Note: All responsive behaviour below is driven by pure CSS (@media queries)
-// rather than a JS resize listener. This avoids hydration/layout-thrash issues
-// and keeps the desktop <-> mobile switch instant and SSR-safe.
+
 const globalStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
@@ -58,6 +56,28 @@ const globalStyles = `
 
 .sd-addbtn-label { display: inline; }
 
+/* ── Table grid columns (class-based so media queries can retarget them) ── */
+.sd-row-grid {
+  display: grid;
+  grid-template-columns: 36px 64px 1fr 130px 110px 120px 60px;
+  gap: 0 16px;
+}
+
+@media (max-width: 1180px) {
+  .sd-row-grid {
+    grid-template-columns: 32px 56px 1fr 110px 95px 60px;
+  }
+  .sd-col-savings { display: none; }
+}
+
+@media (max-width: 1024px) {
+  .sd-row-grid {
+    grid-template-columns: 28px 48px 1fr 95px 60px;
+  }
+  .sd-col-discount { display: none; }
+  .sd-desktop-table .sd-deal-desc { display: none; }
+}
+
 @media (max-width: 860px) {
   .sd-desktop-table { display: none; }
   .sd-mobile-cards   { display: block; }
@@ -80,10 +100,6 @@ const globalStyles = `
   .sd-filter-tabs button { white-space: nowrap; }
 
   .sd-breadcrumb-portal { display: none; }
-}
-
-@media (max-width: 420px) {
-  .sd-addbtn-label { display: none; }
 }
 `;
 
@@ -113,7 +129,7 @@ const ThumbStrip = ({ images, size = 44 }) => {
           borderRadius: 10,
           overflow: 'hidden',
           border: `2px solid ${T.bgWhite}`,
-          marginLeft: i > 0 ? -10 : 0,
+          marginLeft: i > 0 ? -35 : 0,
           zIndex: imgs.length - i,
           position: 'relative',
           background: T.bgDefault,
@@ -145,11 +161,8 @@ const ThumbStrip = ({ images, size = 44 }) => {
 
 // ─── Skeleton row (desktop table) ────────────────────────────────────────────
 const SkeletonRow = ({ index }) => (
-  <div style={{
-    display: 'grid',
-    gridTemplateColumns: '36px 64px 1fr 120px 100px 110px 60px',
+  <div className="sd-row-grid" style={{
     alignItems: 'center',
-    gap: '0 16px',
     padding: '13px 20px',
     borderBottom: `1px solid ${T.border}`,
   }}>
@@ -198,13 +211,11 @@ const DealRow = ({ deal, index }) => {
 
   return (
     <div
+      className="sd-row-grid"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'grid',
-        gridTemplateColumns: '36px 64px 1fr 130px 110px 120px 60px',
         alignItems: 'center',
-        gap: '0 16px',
         padding: '13px 20px',
         borderBottom: `1px solid ${T.border}`,
         background: hovered ? '#F8FAFF' : T.bgWhite,
@@ -225,7 +236,7 @@ const DealRow = ({ deal, index }) => {
       <ThumbStrip images={deal.images} />
 
       {/* Title + description */}
-      <div style={{ overflow: 'hidden' }}>
+      <div style={{ overflow: 'hidden', minWidth: 0 }}>
         <div style={{
           fontFamily: T.font, fontWeight: 700, fontSize: '14px',
           color: hovered ? T.primaryMain : T.textPrimary,
@@ -235,7 +246,7 @@ const DealRow = ({ deal, index }) => {
           {deal.title}
         </div>
         {deal.description && (
-          <div style={{
+          <div className="sd-deal-desc" style={{
             fontFamily: T.font, fontWeight: 400, fontSize: '12px',
             color: T.textSecondary, marginTop: 2,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -247,7 +258,7 @@ const DealRow = ({ deal, index }) => {
       </div>
 
       {/* Deal price */}
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div style={{
           fontFamily: T.font, fontWeight: 800, fontSize: '15px',
           color: T.textPrimary, letterSpacing: '-0.3px',
@@ -265,13 +276,14 @@ const DealRow = ({ deal, index }) => {
       </div>
 
       {/* Discount badge */}
-      <div>
+      <div className="sd-col-discount" style={{ minWidth: 0 }}>
         {hasDiscount ? (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '3px 9px', borderRadius: 20,
             fontSize: '11px', fontWeight: 700, fontFamily: T.font,
             background: T.successBg, color: T.success,
+            whiteSpace: 'nowrap',
           }}>
             🏷️ {deal.discountPercent}% OFF
           </span>
@@ -281,9 +293,12 @@ const DealRow = ({ deal, index }) => {
       </div>
 
       {/* Savings */}
-      <div>
+      <div className="sd-col-savings" style={{ minWidth: 0 }}>
         {saving !== null && saving > 0 ? (
-          <div style={{ fontFamily: T.font, fontWeight: 600, fontSize: '13px', color: T.success }}>
+          <div style={{
+            fontFamily: T.font, fontWeight: 600, fontSize: '13px', color: T.success,
+            whiteSpace: 'nowrap',
+          }}>
             ₹{saving} saved
           </div>
         ) : (
@@ -292,7 +307,7 @@ const DealRow = ({ deal, index }) => {
       </div>
 
       {/* Photos count */}
-      <div style={{ textAlign: 'right' }}>
+      <div style={{ textAlign: 'right', minWidth: 0 }}>
         {deal.images && deal.images.length > 0 ? (
           <span style={{
             fontFamily: T.font, fontWeight: 500, fontSize: '11px',
@@ -300,6 +315,7 @@ const DealRow = ({ deal, index }) => {
             background: T.bgDefault,
             border: `1px solid ${T.border}`,
             borderRadius: 20, padding: '2px 8px',
+            whiteSpace: 'nowrap',
           }}>
             {deal.images.length} photo{deal.images.length !== 1 ? 's' : ''}
           </span>
@@ -660,23 +676,24 @@ const ShopDealsPage = () => {
             {/* Desktop table */}
             <div className="sd-desktop-table">
               {/* Column headers */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '36px 64px 1fr 130px 110px 120px 60px',
-                gap: '0 16px', padding: '10px 20px',
+              <div className="sd-row-grid" style={{
+                padding: '10px 20px',
                 borderBottom: `1px solid ${T.border}`,
                 background: '#F9FAFB',
               }}>
-                {['#', '', 'Deal', 'Price', 'Discount', 'You Save', 'Photos'].map((h, i) => (
-                  <span key={i} style={{
-                    fontFamily: T.font, fontWeight: 600, fontSize: '11px',
-                    color: T.textSecondary, letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
-                    textAlign: i === 6 ? 'right' : 'left',
-                  }}>
-                    {h}
-                  </span>
-                ))}
+                {['#', '', 'Deal', 'Price', 'Discount', 'You Save', 'Photos'].map((h, i) => {
+                  const extraClass = i === 4 ? 'sd-col-discount' : i === 5 ? 'sd-col-savings' : '';
+                  return (
+                    <span key={i} className={extraClass} style={{
+                      fontFamily: T.font, fontWeight: 600, fontSize: '11px',
+                      color: T.textSecondary, letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      textAlign: i === 6 ? 'right' : 'left',
+                    }}>
+                      {h}
+                    </span>
+                  );
+                })}
               </div>
 
               {filtered.map((deal, i) => (
