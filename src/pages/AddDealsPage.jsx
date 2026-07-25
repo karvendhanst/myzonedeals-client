@@ -13,6 +13,9 @@ import SellIcon from '@mui/icons-material/Sell';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useCreateDeal } from '../hooks/useCreateDeal';
 
 /* ─── Field label ─── */
@@ -484,9 +487,9 @@ const AddDealsPage = () => {
             <FieldLabel>Offer Type</FieldLabel>
             <Box sx={{ display: 'flex', gap: 2, mt: 1, flexWrap: 'wrap' }}>
               {[
-                { value: 'discount', label: 'Flat Discount', icon: '📉' },
-                { value: 'bogo', label: 'Buy & Get', icon: '🎁' },
-                { value: 'freebie', label: 'Free Gift', icon: '✨' },
+                { value: 'discount', label: 'Flat Discount', icon: <TrendingDownIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
+                { value: 'bogo', label: 'Buy & Get', icon: <CardGiftcardIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
+                { value: 'freebie', label: 'Free Gift', icon: <AutoAwesomeIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
               ].map(opt => (
                 <Box
                   key={opt.value}
@@ -505,7 +508,7 @@ const AddDealsPage = () => {
                     '&:hover': { borderColor: form.dealType === opt.value ? '#F4A261' : '#CBD5E1' }
                   }}
                 >
-                  <Typography fontSize="1.2rem">{opt.icon}</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>{opt.icon}</Box>
                   <Typography fontWeight={700} fontSize="0.75rem" color={form.dealType === opt.value ? '#192235' : '#6B7280'}>
                     {opt.label}
                   </Typography>

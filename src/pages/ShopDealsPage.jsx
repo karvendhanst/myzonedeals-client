@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Container } from '@mui/material';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetShopDeals } from '../hooks/useGetShopDeals';
 
@@ -117,7 +119,7 @@ const ThumbStrip = ({ images, size = 44 }) => {
         border: `1px solid ${T.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 18, flexShrink: 0,
-      }}>🏷️</div>
+      }}><LocalOfferIcon sx={{ fontSize: 18 }} /></div>
     );
   }
 
@@ -285,7 +287,7 @@ const DealRow = ({ deal, index }) => {
             background: T.successBg, color: T.success,
             whiteSpace: 'nowrap',
           }}>
-            🏷️ {deal.discountPercent}% OFF
+            <LocalOfferIcon sx={{ fontSize: 12 }} /> {deal.discountPercent}% OFF
           </span>
         ) : (
           <span style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, opacity: 0.4 }}>—</span>
@@ -413,7 +415,7 @@ const DealCard = ({ deal, index }) => {
               fontSize: '11px', fontWeight: 700, fontFamily: T.font,
               background: T.successBg, color: T.success,
             }}>
-              🏷️ {deal.discountPercent}% OFF
+              <LocalOfferIcon sx={{ fontSize: 12 }} /> {deal.discountPercent}% OFF
             </span>
           )}
           {saving !== null && saving > 0 && (
@@ -548,7 +550,7 @@ const ShopDealsPage = () => {
               onMouseEnter={e => { e.currentTarget.style.background = T.primaryMain; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = T.primaryMain; }}
               onMouseLeave={e => { e.currentTarget.style.background = T.bgWhite; e.currentTarget.style.color = T.textSecondary; e.currentTarget.style.borderColor = T.border; }}
             >
-              ←
+              <ArrowBackIcon sx={{ fontSize: 16 }} />
             </button>
             <span className="sd-breadcrumb-portal" style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, whiteSpace: 'nowrap' }}>
               Dealer Portal

@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import DealDetailPanel from "../components/DealDetailPanel";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import "../styles/map.css";
 import { customIcon } from "../components/pinIcon";
 import { useGetMapDeals } from "../hooks/useGetMapDeals";
@@ -31,21 +32,36 @@ const Home = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Group deals by shopId so one marker shows all deals for that shop
+
   const shopGroups = useMemo(() => {
     const groups = {};
+    const seenCoords = {}; 
+
     deals.forEach((deal) => {
-      if (!groups[deal.shopId]) {
-        groups[deal.shopId] = {
-          shopId: deal.shopId,
+      const key = String(deal.shopId);
+      if (!groups[key]) {
+        const lat = Number(deal.latitude);
+        const lng = Number(deal.longitude);
+        const posKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+        const count = seenCoords[posKey] ?? 0;
+        seenCoords[posKey] = count + 1;
+
+        // Apply a tiny spiral jitter (~3–5 m) so coincident markers don't stack
+        const jitter = count * 0.00004;
+        const angle = count * 2.4; // golden-angle spread
+        const jLat = count === 0 ? lat : lat + jitter * Math.cos(angle);
+        const jLng = count === 0 ? lng : lng + jitter * Math.sin(angle);
+
+        groups[key] = {
+          shopId: key,
           shopName: deal.shopName,
           shopImage: deal.shopImage,
-          latitude: deal.latitude,
-          longitude: deal.longitude,
+          latitude: jLat,
+          longitude: jLng,
           deals: [],
         };
       }
-      groups[deal.shopId].deals.push(deal);
+      groups[key].deals.push(deal);
     });
     return Object.values(groups);
   }, [deals]);
@@ -65,8 +81,7 @@ const Home = () => {
     setOpen(false);
   };
 
-  // Cheapest deal per shop — used as the single price shown in the tooltip
-  // so the preview reads as "one clear number", not a list of everything.
+
   const bestPriceFor = (group) =>
     Math.min(...group.deals.map((d) => d.dealPrice));
 
@@ -171,8 +186,7 @@ const Home = () => {
 
       {/* MAP */}
       <Box sx={{ flex: 1, position: "relative", height: "100%", width: "100%" }}>
-        {/* Floating context pill — gives the map a sense of scale instead of
-            being an unlabeled wall of pins */}
+
         <Box
           sx={{
             position: "absolute",
@@ -224,10 +238,7 @@ const Home = () => {
                 click: () => handleMarkerClick(group),
               }}
             >
-              {/* Trimmed preview: name + best price + deal count only.
-                  Full descriptions live in DealDetailPanel after tap —
-                  the tooltip used to repeat every deal's text, which is
-                  what made the map feel cluttered/confusing. */}
+
               <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
                 <div className="dt-card">
                   <div className="dt-header">
@@ -238,7 +249,7 @@ const Home = () => {
                       <p className="dt-name">{group.shopName}</p>
                       <p className="dt-type">{group.deals[0]?.category}</p>
                     </div>
-                    <span className="dt-live">● LIVE</span>
+                    <span className="dt-live" style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><FiberManualRecordIcon sx={{ fontSize: 10 }} /> LIVE</span>
                   </div>
                   <div className="dt-body">
                     <p className="dt-label">
@@ -251,6 +262,8 @@ const Home = () => {
                   </div>
                 </div>
               </Tooltip>
+
+              
             </Marker>
           ))}
         </MapContainer>

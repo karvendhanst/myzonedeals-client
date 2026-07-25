@@ -13,33 +13,58 @@ const STEPS = {
   LOGIN: 'login',
 };
 
+const SESSION_STEP_KEY = 'dealer_portal_step';
+const SESSION_EMAIL_KEY = 'dealer_portal_email';
+
 export default function DealerPortal() {
-  const [step, setStep] = useState(STEPS.SIGNUP);
-  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [step, setStep] = useState(
+    () => sessionStorage.getItem(SESSION_STEP_KEY) || STEPS.SIGNUP
+  );
+  const [registeredEmail, setRegisteredEmail] = useState(
+    () => sessionStorage.getItem(SESSION_EMAIL_KEY) || ''
+  );
+  // true only when OTP was freshly sent (not restored from sessionStorage)
+  const [otpJustSent, setOtpJustSent] = useState(false);
   const navigate = useNavigate();
   const { login: authLogin } = useAuthStore();
 
+  const goToStep = (nextStep, email = registeredEmail) => {
+    setStep(nextStep);
+    sessionStorage.setItem(SESSION_STEP_KEY, nextStep);
+    if (email) {
+      setRegisteredEmail(email);
+      sessionStorage.setItem(SESSION_EMAIL_KEY, email);
+    }
+  };
+
+  const clearSession = () => {
+    sessionStorage.removeItem(SESSION_STEP_KEY);
+    sessionStorage.removeItem(SESSION_EMAIL_KEY);
+  };
+
   const handleSignupSuccess = (email) => {
-    setRegisteredEmail(email);
-    setStep(STEPS.OTP);
+    setOtpJustSent(true);
+    goToStep(STEPS.OTP, email);
   };
 
   const handleOtpSuccess = (data) => {
+    clearSession();
     if (data?.token) {
       authLogin(data.token);
       navigate('/add-shop');
     } else {
-      setStep(STEPS.LOGIN);
+      goToStep(STEPS.LOGIN);
     }
   };
 
-  const handleUnverifiedEmail = (email) => {
-    setRegisteredEmail(email);
-    setStep(STEPS.OTP);
-  };
+  const handleUnverifiedEmail = (email) => goToStep(STEPS.OTP, email);
 
-  const handleSwitchToLogin = () => setStep(STEPS.LOGIN);
-  const handleSwitchToSignup = () => setStep(STEPS.SIGNUP);
+  const handleSwitchToLogin = () => goToStep(STEPS.LOGIN);
+  const handleSwitchToSignup = () => {
+    clearSession();
+    setStep(STEPS.SIGNUP);
+    setRegisteredEmail('');
+  };
 
   return (
     <Grid
@@ -90,6 +115,8 @@ export default function DealerPortal() {
               email={registeredEmail}
               onSuccess={handleOtpSuccess}
               onBack={handleSwitchToSignup}
+              initialSent={otpJustSent}
+              onInitialToastShown={() => setOtpJustSent(false)}
             />
           )}
           {step === STEPS.LOGIN && (

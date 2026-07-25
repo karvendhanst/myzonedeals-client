@@ -9,31 +9,61 @@ import {
   Alert,
   Link,
   CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import MarkEmailReadOutlinedIcon from '@mui/icons-material/MarkEmailReadOutlined';
 import { useVerifyOtpMutation, useResendOtpMutation } from '../../api/useAuthMutations';
 
 const OTP_LENGTH = 6;
+const TIMER_EXPIRY_KEY = 'otp_resend_expiry';
 
-export default function OtpForm({ email, onSuccess, onBack }) {
+function getInitialTimer() {
+  const expiry = sessionStorage.getItem(TIMER_EXPIRY_KEY);
+  if (!expiry) return 0;
+  const remaining = Math.round((Number(expiry) - Date.now()) / 1000);
+  return remaining > 0 ? remaining : 0;
+}
+
+export default function OtpForm({ email, onSuccess, onBack, initialSent = false, onInitialToastShown }) {
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
-  const [resendTimer, setResendTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(getInitialTimer);
+  const [toastOpen, setToastOpen] = useState(false);
   const inputRefs = useRef([]);
 
   // Countdown timer for resend
   useEffect(() => {
-    if (resendTimer <= 0) return;
+    if (resendTimer <= 0) {
+      sessionStorage.removeItem(TIMER_EXPIRY_KEY);
+      return;
+    }
     const t = setTimeout(() => setResendTimer((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [resendTimer]);
+
+  // Set fresh 60-second timer when OTP first arrives
+  useEffect(() => {
+    if (initialSent) {
+      const expiry = Date.now() + 60_000;
+      sessionStorage.setItem(TIMER_EXPIRY_KEY, String(expiry));
+      setResendTimer(60);
+      setToastOpen(true);
+      onInitialToastShown?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { mutate: verify, isPending, error: verifyError } = useVerifyOtpMutation({
     onSuccess,
   });
 
   const { mutate: resend, isPending: resendPending } = useResendOtpMutation({
-    onSuccess: () => setResendTimer(60),
+    onSuccess: () => {
+      const expiry = Date.now() + 60_000;
+      sessionStorage.setItem(TIMER_EXPIRY_KEY, String(expiry));
+      setResendTimer(60);
+      setToastOpen(true);
+    },
   });
 
   const handleChange = (idx, value) => {
@@ -136,7 +166,7 @@ export default function OtpForm({ email, onSuccess, onBack }) {
       )}
 
       {/* OTP inputs */}
-      <Box sx={{ display: 'flex', gap: 1.5, mb: 4, justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', gap: { xs: '6px', sm: 1.5 }, mb: 4, justifyContent: 'center' }}>
         {otp.map((digit, idx) => (
           <Box
             key={idx}
@@ -150,10 +180,10 @@ export default function OtpForm({ email, onSuccess, onBack }) {
             onKeyDown={(e) => handleKeyDown(idx, e)}
             onPaste={handlePaste}
             sx={{
-              width: 52,
-              height: 58,
+              width: 'min(13vw, 52px)',
+              height: 'min(14vw, 58px)',
               textAlign: 'center',
-              fontSize: '1.5rem',
+              fontSize: 'clamp(1rem, 4vw, 1.5rem)',
               fontWeight: 700,
               fontFamily: "'DM Sans', sans-serif",
               border: digit
@@ -164,6 +194,7 @@ export default function OtpForm({ email, onSuccess, onBack }) {
               outline: 'none',
               transition: 'border-color 0.15s, background 0.15s',
               cursor: 'text',
+              flexShrink: 0,
               '&:focus': {
                 borderColor: '#E8971A',
                 boxShadow: '0 0 0 3px rgba(232,151,26,0.18)',
@@ -217,6 +248,31 @@ export default function OtpForm({ email, onSuccess, onBack }) {
           </Link>
         )}
       </Typography>
+
+      {/* OTP sent toast */}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3500}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{
+            bgcolor: '#E8971A',
+            color: 'white',
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 600,
+            borderRadius: '10px',
+            '& .MuiAlert-icon': { color: 'white' },
+            '& .MuiAlert-action .MuiSvgIcon-root': { color: 'white' },
+          }}
+        >
+          OTP sent! Check your inbox.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

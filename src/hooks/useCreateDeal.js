@@ -16,6 +16,13 @@ export const useCreateDeal = (shopId, options) => {
               formData.append("images", img.file);
             }
           });
+        } else if (
+          payload[key] !== null &&
+          typeof payload[key] === "object" &&
+          !Array.isArray(payload[key])
+        ) {
+          // Serialize nested objects (bogoDetails, freebieDetails) as JSON
+          formData.append(key, JSON.stringify(payload[key]));
         } else {
           formData.append(key, payload[key]);
         }

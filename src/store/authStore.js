@@ -36,12 +36,12 @@ const getInitialState = () => {
   return {
     token: token || null,
     user: token ? { token } : null,
-    loading: false, // ✅ Already resolved at store creation — no async needed
+    loading: false, // Already resolved at store creation — no async needed
   };
 };
 
 const useAuthStore = create((set) => ({
-  ...getInitialState(), // ✅ Runs synchronously before any component renders
+  ...getInitialState(), // Runs synchronously before any component renders
 
   login: (newToken) => {
     localStorage.setItem('mzd_token', newToken);

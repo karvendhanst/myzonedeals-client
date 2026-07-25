@@ -14,6 +14,10 @@ import { useDirections } from '../hooks/useDirections';
 import DirectionsIcon from '@mui/icons-material/Directions';
 import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import CloseIcon from '@mui/icons-material/Close';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import BlockIcon from '@mui/icons-material/Block';
+import WarningIcon from '@mui/icons-material/Warning';
 
 /* ─── Inject component-scoped styles once ───────────────────────────────── */
 const MODAL_STYLES = `
@@ -333,19 +337,19 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
               color: T.muted, fontSize: 15, flexShrink: 0,
             }}
           >
-            ✕
+            <CloseIcon sx={{ fontSize: 16 }} />
           </button>
         </div>
 
         {/* Body */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {gpsLoading && (
-            <StatusScreen icon="📍" iconBg="#EEF2FF" title="Detecting your location…" message="Please allow location access when prompted." />
+            <StatusScreen icon={<LocationOnIcon sx={{ fontSize: 'inherit' }} />} iconBg="#EEF2FF" title="Detecting your location…" message="Please allow location access when prompted." />
           )}
 
           {!gpsLoading && permissionDenied && (
             <StatusScreen
-              icon="🚫" iconBg="#FEE2E2" title="Location access denied"
+              icon={<BlockIcon sx={{ fontSize: 'inherit' }} />} iconBg="#FEE2E2" title="Location access denied"
               message="Enable location access in your browser settings, then try again."
             >
               <RetryButton onClick={retry} />
@@ -353,7 +357,7 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
           )}
 
           {!gpsLoading && !permissionDenied && error && !routeCoords && (
-            <StatusScreen icon="⚠️" iconBg="#FEF3C7" title="Couldn't calculate a route" message={error}>
+            <StatusScreen icon={<WarningIcon sx={{ fontSize: 'inherit' }} />} iconBg="#FEF3C7" title="Couldn't calculate a route" message={error}>
               <RetryButton onClick={retry} />
             </StatusScreen>
           )}

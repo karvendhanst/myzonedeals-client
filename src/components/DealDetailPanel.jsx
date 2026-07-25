@@ -10,6 +10,9 @@ import StarIcon from "@mui/icons-material/Star";
 import BoltIcon from "@mui/icons-material/Bolt";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import DirectionsModal from "./DirectionsModal";
 
 /* ─── inject styles once ─── */
@@ -58,7 +61,7 @@ if (typeof document !== "undefined" && !document.getElementById("dp-styles")) {
 }
 
 /* ─── IMAGE CAROUSEL ─── */
-const ImageCarousel = ({ images = [], discountPct, hasMultipleDeals, allDeals, selectedIndex, onClose }) => {
+const ImageCarousel = ({ images = [], discountPct, dealTypeBadge, hasMultipleDeals, allDeals, selectedIndex, onClose }) => {
   const [current, setCurrent] = useState(0);
   const [dragStart, setDragStart] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -157,7 +160,7 @@ const ImageCarousel = ({ images = [], discountPct, hasMultipleDeals, allDeals, s
         <CloseIcon sx={{ fontSize: 15 }} />
       </IconButton>
 
-      {/* Discount badge */}
+      {/* Discount / deal-type badge */}
       <Box sx={{
         position: "absolute", top: 12, left: 12,
         display: "flex", alignItems: "center", gap: 0.5,
@@ -168,7 +171,7 @@ const ImageCarousel = ({ images = [], discountPct, hasMultipleDeals, allDeals, s
         boxShadow: "0 4px 14px rgba(244,162,97,0.45)",
       }}>
         <BoltIcon sx={{ fontSize: 12 }} />
-        {discountPct}% OFF
+        {discountPct > 0 ? `${discountPct}% OFF` : dealTypeBadge}
       </Box>
 
       {/* Bottom row: live pill + dots + deal counter */}
@@ -267,8 +270,8 @@ const EmptyState = () => (
       width: 80, height: 80, borderRadius: "24px",
       background: "linear-gradient(135deg, #0F172A 0%, #1e2d47 100%)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 34, boxShadow: "0 12px 40px rgba(15,23,42,0.18)",
-    }}>🏷️</Box>
+      fontSize: 34, boxShadow: "0 12px 40px rgba(15,23,42,0.18)", color: "#fff",
+    }}><LocalOfferIcon sx={{ fontSize: "inherit" }} /></Box>
     <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 16, color: "text.primary", textAlign: "center" }}>
       No deal selected
     </Typography>
@@ -279,6 +282,15 @@ const EmptyState = () => (
 );
 
 /* ─── DEAL TAB BAR ─── */
+const getDealSubLabel = (deal) => {
+  if (deal.dealType === 'bogo' && deal.bogoDetails) {
+    return `Buy ${deal.bogoDetails.buyQty} Get ${deal.bogoDetails.getQty}`;
+  }
+  if (deal.dealType === 'freebie') return <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>Free Gift <CardGiftcardIcon sx={{ fontSize: 12 }} /></Box>;
+  // discount or legacy
+  return deal.dealPrice != null ? `₹${deal.dealPrice}` : '';
+};
+
 const DealTabBar = ({ deals, selectedIndex, onSelect }) => (
   <Box sx={{
     display: "flex", gap: 1, px: 2, py: 1.5, overflowX: "auto",
@@ -296,7 +308,7 @@ const DealTabBar = ({ deals, selectedIndex, onSelect }) => (
           {deal.title}
         </Typography>
         <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: i === selectedIndex ? "rgba(255,255,255,0.65)" : "#F4A261" }}>
-          ₹{deal.dealPrice}
+          {getDealSubLabel(deal)}
         </Typography>
       </Box>
     ))}
@@ -317,8 +329,14 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
 
   if (!deal) return <EmptyState />;
 
+  const dealType = deal.dealType ?? 'discount';
   const savings = deal.price - deal.dealPrice;
-  const discountPct = deal.discountPercent ?? Math.round((savings / deal.price) * 100);
+  const discountPct = dealType === 'discount'
+    ? (deal.discountPercent ?? Math.round((savings / deal.price) * 100))
+    : 0;
+  const dealTypeBadge =
+    dealType === 'bogo' ? 'Buy & Get' :
+    dealType === 'freebie' ? 'Free Gift' : 'Deal';
   const hasMultipleDeals = allDeals && allDeals.length > 1;
   const images = deal.images ?? [];
 
@@ -341,6 +359,7 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
         <ImageCarousel
           images={images}
           discountPct={discountPct}
+          dealTypeBadge={dealTypeBadge}
           hasMultipleDeals={hasMultipleDeals}
           allDeals={allDeals}
           selectedIndex={selectedIndex}
@@ -364,8 +383,8 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
                   width: 48, height: 48, borderRadius: "14px",
                   background: "linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 22, flexShrink: 0,
-                }}>🏪</Box>
+                  fontSize: 22, flexShrink: 0, color: "#fff"
+                }}><StorefrontIcon sx={{ fontSize: "inherit" }} /></Box>
               )}
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{
@@ -434,33 +453,90 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
             </Typography>
           </Box>
 
-          {/* Price card */}
-          <Box sx={{ borderRadius: "16px", p: "16px 18px", display: "flex", alignItems: "center", gap: 1.5, position: "relative", overflow: "hidden" }}>
-            <Box sx={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(244,162,97,0.08)", pointerEvents: "none" }} />
-            <Box>
-              <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px" }}>
-                Deal Price
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 28, lineHeight: 1 }}>
-                  ₹{deal.dealPrice}
+          {/* Price card — varies by deal type */}
+          {dealType === 'discount' && (
+            <Box sx={{ borderRadius: "16px", p: "16px 18px", display: "flex", alignItems: "center", gap: 1.5, position: "relative", overflow: "hidden" }}>
+              <Box sx={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(244,162,97,0.08)", pointerEvents: "none" }} />
+              <Box>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px" }}>
+                  Deal Price
                 </Typography>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', textDecoration: "line-through", fontSize: 14, lineHeight: 1 }}>
-                  ₹{deal.price}
+                <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 28, lineHeight: 1 }}>
+                    ₹{deal.dealPrice}
+                  </Typography>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', textDecoration: "line-through", fontSize: 14, lineHeight: 1 }}>
+                    ₹{deal.price}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{
+                ml: "auto",
+                background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)",
+                color: "#fff", fontSize: 11, fontWeight: 800,
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                px: 1.5, py: 0.8, borderRadius: "10px", whiteSpace: "nowrap",
+                boxShadow: "0 4px 14px rgba(244,162,97,0.4)", letterSpacing: "0.2px",
+              }}>
+                Save ₹{savings}
+              </Box>
+            </Box>
+          )}
+
+          {dealType === 'bogo' && (
+            <Box sx={{ borderRadius: "16px", p: "16px 18px", bgcolor: "rgba(244,162,97,0.06)", border: "1px solid rgba(244,162,97,0.2)", position: "relative", overflow: "hidden" }}>
+              <Box sx={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(244,162,97,0.08)", pointerEvents: "none" }} />
+              <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 1, letterSpacing: "0.5px", color: "text.secondary" }}>
+                Buy &amp; Get Offer
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, bgcolor: "#0F172A", borderRadius: "10px", px: 1.8, py: 1 }}>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 22, color: "#fff", lineHeight: 1 }}>
+                    {deal.bogoDetails?.buyQty ?? 1}
+                  </Typography>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.6)", lineHeight: 1.3 }}>
+                    items<br/>buy
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 16, fontWeight: 700, color: "#F4A261" }}>+</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)", borderRadius: "10px", px: 1.8, py: 1 }}>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 22, color: "#fff", lineHeight: 1 }}>
+                    {deal.bogoDetails?.getQty ?? 1}
+                  </Typography>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.3 }}>
+                    FREE<br/>items
+                  </Typography>
+                </Box>
+                <Box sx={{ ml: "auto" }}>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: "text.secondary", mb: 0.2 }}>Original price</Typography>
+                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 18, color: "text.primary" }}>₹{deal.price}</Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          {dealType === 'freebie' && (
+            <Box sx={{ borderRadius: "16px", p: "16px 18px", bgcolor: "rgba(244,162,97,0.06)", border: "1px solid rgba(244,162,97,0.2)", display: "flex", alignItems: "center", gap: 1.5, position: "relative", overflow: "hidden" }}>
+              <Box sx={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(244,162,97,0.08)", pointerEvents: "none" }} />
+              <Box sx={{
+                width: 48, height: 48, borderRadius: "14px",
+                background: "linear-gradient(135deg, #F4A261 0%, #e8894a 100%)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 24, flexShrink: 0, boxShadow: "0 4px 14px rgba(244,162,97,0.4)", color: "#fff"
+              }}><CardGiftcardIcon sx={{ fontSize: "inherit" }} /></Box>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, letterSpacing: "0.5px", color: "text.secondary", mb: 0.3 }}>
+                  Free Gift with purchase
+                </Typography>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 15, color: "text.primary", lineHeight: 1.3 }}>
+                  {deal.freebieDetails?.itemName ?? 'Free item included'}
+                </Typography>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, color: "text.secondary", mt: 0.3 }}>
+                  on purchase of ₹{deal.price}
                 </Typography>
               </Box>
             </Box>
-            <Box sx={{
-              ml: "auto",
-              background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)",
-              color: "#fff", fontSize: 11, fontWeight: 800,
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
-              px: 1.5, py: 0.8, borderRadius: "10px", whiteSpace: "nowrap",
-              boxShadow: "0 4px 14px rgba(244,162,97,0.4)", letterSpacing: "0.2px",
-            }}>
-              Save ₹{savings}
-            </Box>
-          </Box>
+          )}
 
           <Box sx={{ height: "1px", bgcolor: "rgba(15,23,42,0.07)" }} />
 

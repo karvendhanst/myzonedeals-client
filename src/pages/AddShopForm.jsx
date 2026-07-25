@@ -847,6 +847,7 @@ import { useNavigate } from "react-router-dom";
 import { State, City } from "country-state-city";
 import { useTheme, useMediaQuery } from "@mui/material";
 import { useCreateShop } from "../hooks/useCreateShop";
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const CATEGORIES = [
   "Grocery", "Restaurant", "Pharmacy", "Electronics", "Clothing",
@@ -1283,12 +1284,12 @@ export default function AddShopForm() {
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
-              { icon: "✦", text: "Free to list" },
-              { icon: "✦", text: "Local customer reach" },
-              { icon: "✦", text: "Live after quick review" },
+              { icon: <AutoAwesomeIcon sx={{ fontSize: 12 }} />, text: "Free to list" },
+              { icon: <AutoAwesomeIcon sx={{ fontSize: 12 }} />, text: "Local customer reach" },
+              { icon: <AutoAwesomeIcon sx={{ fontSize: 12 }} />, text: "Live after quick review" },
             ].map(({ icon, text }) => (
               <div key={text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 10, color: accent }}>{icon}</span>
+                <span style={{ color: accent, display: 'flex' }}>{icon}</span>
                 <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", fontWeight: 500 }}>{text}</span>
               </div>
             ))}

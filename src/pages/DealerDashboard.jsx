@@ -3,7 +3,9 @@ import { useGetMyShops } from '../hooks/useGetMyShops';
 import { useNavigate } from 'react-router-dom';
 import { useTheme, useMediaQuery } from '@mui/material';
 import LocationPinIcon from '@mui/icons-material/LocationPin';
-
+import WarningIcon from '@mui/icons-material/Warning';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 
 // ─── Theme tokens (matches your MUI theme) ───────────────────────────────────
@@ -205,10 +207,10 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
             display: 'flex', alignItems: 'center', gap: 4,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
-            📍 {shop.address?.city || '—'}
+            <LocationPinIcon style={{ fontSize: '11px' }} /> {shop.address?.city || '—'}
           </div>
         </div>
-        <div style={{ color: T.borderStrong, flexShrink: 0, fontSize: 16 }}>→</div>
+        <div style={{ color: T.borderStrong, flexShrink: 0, display: 'flex', alignItems: 'center' }}><ArrowForwardIcon sx={{ fontSize: 18 }} /></div>
       </div>
     );
   }
@@ -305,7 +307,7 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
         transition: 'all 0.12s',
         transform: hovered && shop.isVerified ? 'translateX(3px)' : 'translateX(0)',
       }}>
-        →
+        <ArrowForwardIcon sx={{ fontSize: 18 }} />
       </div>
     </div>
   );
@@ -521,8 +523,8 @@ const DealerDashboard = () => {
             )}
 
             {error && (
-              <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.font, fontSize: '13px', color: T.error, fontWeight: 500 }}>
-                ⚠ Failed to load shops. Please try again later.
+              <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.font, fontSize: '13px', color: T.error, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <WarningIcon sx={{ fontSize: 16 }} /> Failed to load shops. Please try again later.
               </div>
             )}
 
@@ -532,8 +534,8 @@ const DealerDashboard = () => {
                   width: 48, height: 48, borderRadius: '14px',
                   background: T.bgDefault, display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 14px', fontSize: 22,
-                }}>🏪</div>
+                  margin: '0 auto 14px',
+                }}><StorefrontIcon sx={{ fontSize: 24, color: T.textSecondary }} /></div>
                 <div style={{ fontFamily: T.font, fontWeight: 600, fontSize: '14px', color: T.textPrimary, marginBottom: 6 }}>
                   No shops yet
                 </div>
@@ -595,7 +597,7 @@ const DealerDashboard = () => {
               boxShadow: '0 8px 24px rgba(0,0,0,0.09)',
             }}
           >
-            <span style={{ fontSize: 15, marginTop: 1 }}>⚠️</span>
+            <WarningIcon sx={{ fontSize: 18, color: T.warning, mt: '1px' }} />
             <div>
               <div style={{ fontFamily: T.font, fontWeight: 700, fontSize: '12px', color: T.warning, marginBottom: 2 }}>
                 Shop not verified
