@@ -20,5 +20,5 @@ export const customIcon = L.divIcon({
     </div>
   `,
   iconSize: [42, 42],
-  iconAnchor: [21, 42], 
+  iconAnchor: [21, 21], 
 });

@@ -20,22 +20,42 @@ import "../styles/map.css";
 import { customIcon } from "../components/pinIcon";
 import { useGetMapDeals } from "../hooks/useGetMapDeals";
 import MapSearch from "../components/MapSearch";
+import { Fab, Stack } from "@mui/material";
+import MapIcon from "@mui/icons-material/Map";
+import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
+import MarkerClusterGroup from "react-leaflet-cluster";
+
+import L from "leaflet";
 
 const DRAWER_BLEEDING = 64;
+
+const createClusterCustomIcon = (cluster) => {
+  const count = cluster.getChildCount();
+
+  return L.divIcon({
+    html: `
+      <div class="custom-cluster">
+        ${count}
+      </div>
+    `,
+    className: "",
+    iconSize: [56, 56],
+  });
+};
 
 const Home = () => {
   const { data: deals = [] } = useGetMapDeals();
   const [selectedShopDeals, setSelectedShopDeals] = useState(null);
   const [selectedDealIndex, setSelectedDealIndex] = useState(0);
   const [open, setOpen] = useState(false);
+  const [mapType, setMapType] = useState("road");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-
   const shopGroups = useMemo(() => {
     const groups = {};
-    const seenCoords = {}; 
+    const seenCoords = {};
 
     deals.forEach((deal) => {
       const key = String(deal.shopId);
@@ -46,9 +66,8 @@ const Home = () => {
         const count = seenCoords[posKey] ?? 0;
         seenCoords[posKey] = count + 1;
 
-        // Apply a tiny spiral jitter (~3–5 m) so coincident markers don't stack
         const jitter = count * 0.00004;
-        const angle = count * 2.4; // golden-angle spread
+        const angle = count * 2.4;
         const jLat = count === 0 ? lat : lat + jitter * Math.cos(angle);
         const jLng = count === 0 ? lng : lng + jitter * Math.sin(angle);
 
@@ -66,8 +85,9 @@ const Home = () => {
     return Object.values(groups);
   }, [deals]);
 
-  const selectedDeal =
-    selectedShopDeals ? selectedShopDeals.deals[selectedDealIndex] : null;
+  const selectedDeal = selectedShopDeals
+    ? selectedShopDeals.deals[selectedDealIndex]
+    : null;
 
   const handleMarkerClick = (shopGroup) => {
     setSelectedShopDeals(shopGroup);
@@ -80,7 +100,6 @@ const Home = () => {
     setSelectedDealIndex(0);
     setOpen(false);
   };
-
 
   const bestPriceFor = (group) =>
     Math.min(...group.deals.map((d) => d.dealPrice));
@@ -167,8 +186,18 @@ const Home = () => {
             }}
             onClick={handleClose}
           >
-            <Box sx={{ width: 36, height: 4, bgcolor: "grey.300", borderRadius: 2, mb: 1 }} />
-            <Typography sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary" }}>
+            <Box
+              sx={{
+                width: 36,
+                height: 4,
+                bgcolor: "grey.300",
+                borderRadius: 2,
+                mb: 1,
+              }}
+            />
+            <Typography
+              sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary" }}
+            >
               {selectedDeal ? selectedDeal.shopName : "Tap a marker"}
             </Typography>
           </Box>
@@ -185,8 +214,9 @@ const Home = () => {
       )}
 
       {/* MAP */}
-      <Box sx={{ flex: 1, position: "relative", height: "100%", width: "100%" }}>
-
+      <Box
+        sx={{ flex: 1, position: "relative", height: "100%", width: "100%" }}
+      >
         <Box
           sx={{
             position: "absolute",
@@ -210,8 +240,16 @@ const Home = () => {
             whiteSpace: "nowrap",
           }}
         >
-          <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#4ade80" }} />
-          {shopGroups.length} shop{shopGroups.length !== 1 ? "s" : ""} with live deals
+          <Box
+            sx={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              bgcolor: "#4ade80",
+            }}
+          />
+          {shopGroups.length} shop{shopGroups.length !== 1 ? "s" : ""} with live
+          deals
         </Box>
 
         <MapContainer
@@ -220,52 +258,117 @@ const Home = () => {
           zoomControl={false}
           style={{ height: "100%", width: "100%" }}
         >
+          <Stack
+            spacing={1}
+            sx={{
+              position: "absolute",
+              right: 16,
+              bottom: 24,
+              zIndex: 1000,
+            }}
+          >
+            <Fab
+              size="small"
+              color={mapType === "road" ? "primary" : "default"}
+              onClick={() => setMapType("road")}
+            >
+              <MapIcon />
+            </Fab>
+
+            <Fab
+              size="small"
+              color={mapType === "satellite" ? "primary" : "default"}
+              onClick={() => setMapType("satellite")}
+            >
+              <SatelliteAltIcon />
+            </Fab>
+          </Stack>
+
           <TileLayer
-            attribution="&copy; OpenStreetMap &copy; CARTO"
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution={
+              mapType === "road"
+                ? "&copy; OpenStreetMap &copy; CARTO"
+                : "Tiles © Esri"
+            }
+            url={
+              mapType === "road"
+                ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            }
           />
 
           <MapSearch />
 
           <ZoomControl position="topright" />
 
-          {shopGroups.map((group) => (
-            <Marker
-              key={group.shopId}
-              position={[Number(group.latitude), Number(group.longitude)]}
-              icon={customIcon}
-              eventHandlers={{
-                click: () => handleMarkerClick(group),
-              }}
-            >
-
-              <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
-                <div className="dt-card">
-                  <div className="dt-header">
-                    <div className="dt-logo">
-                      <img src={group.shopImage} alt={group.shopName} width="100%" height="100%" />
+          <MarkerClusterGroup
+            iconCreateFunction={createClusterCustomIcon}
+            showCoverageOnHover={false}
+            spiderLegPolylineOptions={{
+              weight: 2.5,
+              color: "#F4A261",
+              opacity: 0.75,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+            zoomToBoundsOnClick={true}
+            animate={true}
+            maxClusterRadius={60}
+          >
+            {shopGroups.map((group) => (
+              <Marker
+                key={group.shopId}
+                position={[Number(group.latitude), Number(group.longitude)]}
+                icon={customIcon}
+                eventHandlers={{
+                  click: () => handleMarkerClick(group),
+                }}
+              >
+                <Tooltip
+                  direction="top"
+                  offset={[0, -20]}
+                  opacity={1}
+                  permanent={false}
+                >
+                  <div className="dt-card">
+                    <div className="dt-header">
+                      <div className="dt-logo">
+                        <img
+                          src={group.shopImage}
+                          alt={group.shopName}
+                          width="100%"
+                          height="100%"
+                        />
+                      </div>
+                      <div>
+                        <p className="dt-name">{group.shopName}</p>
+                        <p className="dt-type">{group.deals[0]?.category}</p>
+                      </div>
+                      <span
+                        className="dt-live"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "2px",
+                        }}
+                      >
+                        <FiberManualRecordIcon sx={{ fontSize: 10 }} /> LIVE
+                      </span>
                     </div>
-                    <div>
-                      <p className="dt-name">{group.shopName}</p>
-                      <p className="dt-type">{group.deals[0]?.category}</p>
+                    <div className="dt-body">
+                      <p className="dt-label">
+                        From ₹{bestPriceFor(group)} · {group.deals.length} deal
+                        {group.deals.length > 1 ? "s" : ""}
+                      </p>
+                      <div className="dt-footer">
+                        <span className="dt-active">Tap for details</span>
+                      </div>
                     </div>
-                    <span className="dt-live" style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><FiberManualRecordIcon sx={{ fontSize: 10 }} /> LIVE</span>
                   </div>
-                  <div className="dt-body">
-                    <p className="dt-label">
-                      From ₹{bestPriceFor(group)} · {group.deals.length} deal
-                      {group.deals.length > 1 ? "s" : ""}
-                    </p>
-                    <div className="dt-footer">
-                      <span className="dt-active">Tap for details</span>
-                    </div>
-                  </div>
-                </div>
-              </Tooltip>
-
-              
-            </Marker>
-          ))}
+                </Tooltip>
+              </Marker>
+            ))}
+          </MarkerClusterGroup>
         </MapContainer>
       </Box>
     </Box>

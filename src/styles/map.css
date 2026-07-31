@@ -132,3 +132,33 @@
 }
 
 
+.custom-cluster{
+    width:38px;
+    height:38px;
+
+    border-radius:50%;
+
+    background:#fdaa6f;
+
+    color:white;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:18px;
+    font-weight:700;
+
+    border:4px solid white;
+
+    transition:.25s ease;
+}
+
+.custom-cluster:hover{
+    transform:scale(1.1);
+}
+
+
+.leaflet-marker-icon[style*="opacity: 0.3"] {
+    display: none !important;
+}
