@@ -241,7 +241,7 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
   const {
     userLocation, routeCoords, distance, duration,
     gpsLoading, routeLoading, error, permissionDenied, retry,
-  } = useDirections(shopLat, shopLng, mode);
+  } = useDirections(shopLat, shopLng, mode, shopName);
 
   const shopLocation = useMemo(
     () => (shopLat && shopLng ? [Number(shopLat), Number(shopLng)] : null),

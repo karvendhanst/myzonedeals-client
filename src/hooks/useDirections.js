@@ -25,9 +25,12 @@ function haversineMetres([lat1, lng1], [lat2, lng2]) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-function routeCacheKey(userLat, userLng, shopLat, shopLng, mode) {
-  const ru = `${userLat.toFixed(3)},${userLng.toFixed(3)}`; 
-  return `${ru}|${shopLat},${shopLng}|${mode}`;
+function routeCacheKey(userLat, userLng, shopLat, shopLng, mode, shopId) {
+  const ru = `${userLat.toFixed(3)},${userLng.toFixed(3)}`;
+  // shopId ensures two different shops at the same GPS coords
+  // never share a cached route with each other.
+  const sid = shopId ?? `${shopLat},${shopLng}`;
+  return `${ru}|${sid}|${mode}`;
 }
 
 function decodeGeoJSON(coordinates) {
@@ -47,7 +50,7 @@ export function formatDistance(metres) {
   return `${Math.round(metres)} m`;
 }
 
-export function useDirections(shopLat, shopLng, mode = 'driving') {
+export function useDirections(shopLat, shopLng, mode = 'driving', shopId) {
   const isLocationFresh =
     cachedLocation && Date.now() - cachedLocation.timestamp < LOCATION_CACHE_MS;
 
@@ -76,7 +79,8 @@ export function useDirections(shopLat, shopLng, mode = 'driving') {
         if (moved < MIN_MOVE_METRES) return;
       }
 
-      const key = routeCacheKey(userLat, userLng, shopLat, shopLng, mode);
+      // shopId disambiguates shops that share the same GPS coordinates
+      const key = routeCacheKey(userLat, userLng, shopLat, shopLng, mode, shopId);
       const cached = routeCache.get(key);
       if (cached && !force) {
         setRouteCoords(cached.routeCoords);
@@ -84,7 +88,7 @@ export function useDirections(shopLat, shopLng, mode = 'driving') {
         setDuration(cached.duration);
         setError(null);
         lastFetchedAtRef.current = [userLat, userLng];
-        return; 
+        return;
       }
 
       const now = Date.now();
@@ -134,7 +138,7 @@ const url =
         setRouteLoading(false);
       }
     },
-    [shopLat, shopLng, mode],
+    [shopLat, shopLng, mode, shopId],
   );
 
   const startWatch = useCallback(
@@ -191,10 +195,14 @@ const url =
 
   useEffect(() => {
     if (userLocation) {
+      // Re-fetch whenever mode, destination coordinates, OR the shop identity
+      // changes. Without shopId in deps, switching between two shops that share
+      // the same lat/lng would NOT trigger a re-fetch (deps unchanged) and the
+      // route calculated for the first shop would silently persist.
       fetchRoute(userLocation[0], userLocation[1], { force: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, shopLat, shopLng]);
+  }, [mode, shopLat, shopLng, shopId]);
 
   useEffect(() => {
     if (isLocationFresh) {
