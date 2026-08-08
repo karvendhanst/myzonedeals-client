@@ -4,6 +4,9 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetShopDeals } from '../hooks/useGetShopDeals';
+import { updateDeal } from '../api/dealApi';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 
 // ─── Theme tokens (same as DealerDashboard) ──────────────────────────────────
 const T = {
@@ -204,7 +207,7 @@ const SkeletonCard = ({ index }) => (
 );
 
 // ─── Deal row (desktop table) ────────────────────────────────────────────────
-const DealRow = ({ deal, index }) => {
+const DealRow = ({ deal, index, onEdit }) => {
   const [hovered, setHovered] = useState(false);
   const hasDiscount = deal.discountPercent > 0;
   const saving = deal.price && deal.dealPrice
@@ -308,29 +311,24 @@ const DealRow = ({ deal, index }) => {
         )}
       </div>
 
-      {/* Photos count */}
-      <div style={{ textAlign: 'right', minWidth: 0 }}>
-        {deal.images && deal.images.length > 0 ? (
-          <span style={{
-            fontFamily: T.font, fontWeight: 500, fontSize: '11px',
-            color: T.textSecondary,
-            background: T.bgDefault,
-            border: `1px solid ${T.border}`,
-            borderRadius: 20, padding: '2px 8px',
-            whiteSpace: 'nowrap',
-          }}>
-            {deal.images.length} photo{deal.images.length !== 1 ? 's' : ''}
-          </span>
-        ) : (
-          <span style={{ fontFamily: T.font, fontSize: '11px', color: T.textSecondary, opacity: 0.35 }}>No photos</span>
-        )}
+      {/* Actions */}
+      <div style={{ textAlign: 'right', minWidth: 0, display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); onEdit(deal); }}
+          style={{
+            cursor: 'pointer', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: 6,
+            color: T.textSecondary, fontSize: '12px', padding: '4px 8px', fontFamily: T.font, fontWeight: 600
+          }}
+        >
+          Edit
+        </button>
       </div>
     </div>
   );
 };
 
 // ─── Deal card (mobile) ──────────────────────────────────────────────────────
-const DealCard = ({ deal, index }) => {
+const DealCard = ({ deal, index, onEdit }) => {
   const hasDiscount = deal.discountPercent > 0;
   const saving = deal.price && deal.dealPrice
     ? deal.price - deal.dealPrice
@@ -444,6 +442,16 @@ const DealCard = ({ deal, index }) => {
               No photos
             </span>
           )}
+          <button
+            onClick={() => onEdit(deal)}
+            style={{
+              cursor: 'pointer', background: T.bgDefault, border: 'none', borderRadius: 6,
+              color: T.textPrimary, fontSize: '12px', padding: '4px 12px', fontFamily: T.font, fontWeight: 600,
+              marginLeft: 8
+            }}
+          >
+            Edit
+          </button>
         </div>
       </div>
     </div>
@@ -454,10 +462,34 @@ const DealCard = ({ deal, index }) => {
 const ShopDealsPage = () => {
   const { shopId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: response, isLoading, error } = useGetShopDeals(shopId);
   const deals = response?.deals || [];
 
   const [filter, setFilter] = useState('all');
+  const [editingDeal, setEditingDeal] = useState(null);
+
+  const { mutate: doUpdateDeal, isPending: updating } = useMutation({
+    mutationFn: (data) => updateDeal(data._id, data.payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopDeals', shopId] });
+      setEditingDeal(null);
+    }
+  });
+
+  const handleEditSave = () => {
+    doUpdateDeal({
+      _id: editingDeal._id,
+      payload: {
+        title: editingDeal.title,
+        description: editingDeal.description,
+        price: editingDeal.price,
+        dealPrice: editingDeal.dealPrice,
+        validFrom: editingDeal.validFrom,
+        validTill: editingDeal.validTill,
+      }
+    });
+  };
 
   useEffect(() => {
     if (!isLoading && !error && deals.length === 0) {
@@ -699,7 +731,7 @@ const ShopDealsPage = () => {
               </div>
 
               {filtered.map((deal, i) => (
-                <DealRow key={deal._id} deal={deal} index={i} />
+                <DealRow key={deal._id} deal={deal} index={i} onEdit={(d) => setEditingDeal({...d, validFrom: d.validFrom?.split('T')[0] || '', validTill: d.validTill?.split('T')[0] || ''})} />
               ))}
 
               {filtered.length === 0 && (
@@ -716,7 +748,7 @@ const ShopDealsPage = () => {
             {/* Mobile cards */}
             <div className="sd-mobile-cards">
               {filtered.map((deal, i) => (
-                <DealCard key={deal._id} deal={deal} index={i} />
+                <DealCard key={deal._id} deal={deal} index={i} onEdit={(d) => setEditingDeal({...d, validFrom: d.validFrom?.split('T')[0] || '', validTill: d.validTill?.split('T')[0] || ''})} />
               ))}
 
               {filtered.length === 0 && (
@@ -731,6 +763,31 @@ const ShopDealsPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Edit Deal Modal */}
+        <Dialog open={!!editingDeal} onClose={() => setEditingDeal(null)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ fontFamily: T.font, fontWeight: 700 }}>Edit Deal</DialogTitle>
+          <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
+            <TextField label="Title" value={editingDeal?.title || ''} onChange={e => setEditingDeal({...editingDeal, title: e.target.value})} fullWidth />
+            <TextField label="Description" value={editingDeal?.description || ''} onChange={e => setEditingDeal({...editingDeal, description: e.target.value})} fullWidth multiline rows={3} />
+            <div style={{ display: 'flex', gap: 16 }}>
+              <TextField label="Original Price" type="number" value={editingDeal?.price || ''} onChange={e => setEditingDeal({...editingDeal, price: e.target.value})} fullWidth />
+              {editingDeal?.dealType === 'discount' && (
+                <TextField label="Deal Price" type="number" value={editingDeal?.dealPrice || ''} onChange={e => setEditingDeal({...editingDeal, dealPrice: e.target.value})} fullWidth />
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <TextField label="Valid From" type="date" value={editingDeal?.validFrom || ''} onChange={e => setEditingDeal({...editingDeal, validFrom: e.target.value})} fullWidth InputLabelProps={{ shrink: true }} />
+              <TextField label="Valid Till" type="date" value={editingDeal?.validTill || ''} onChange={e => setEditingDeal({...editingDeal, validTill: e.target.value})} fullWidth InputLabelProps={{ shrink: true }} />
+            </div>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setEditingDeal(null)} color="inherit">Cancel</Button>
+            <Button onClick={handleEditSave} variant="contained" disabled={updating} sx={{ bgcolor: T.primaryMain, color: 'white' }}>
+              {updating ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </>
   );

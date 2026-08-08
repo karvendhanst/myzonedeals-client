@@ -9,6 +9,7 @@ import DealerPortal from "./pages/DealerPortal";
 import AddShopForm from "./pages/AddShopForm";
 import AddDealsPage from "./pages/AddDealsPage";
 import ShopDealsPage from "./pages/ShopDealsPage";
+import DealerProfile from "./pages/DealerProfile";
 
 function App() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -37,6 +38,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DealerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dealer-profile"
+          element={
+            <ProtectedRoute>
+              <DealerProfile />
             </ProtectedRoute>
           }
         />

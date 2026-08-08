@@ -27,3 +27,15 @@ export const getMyShopsApi = async () => {
   });
   return data;
 };
+
+// Update Shop API
+export const updateShopApi = async (shopId, formData) => {
+  const token = localStorage.getItem("mzd_token");
+  const { data } = await API.patch(`/shop/update/${shopId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+};

@@ -14,6 +14,7 @@ import {
   ListItemText,
   useMediaQuery,
   useTheme,
+  Avatar,
 } from "@mui/material";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import StorefrontIcon from "@mui/icons-material/Storefront";
@@ -21,7 +22,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import LogoutIcon from "@mui/icons-material/Logout";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import useAuthStore from "../store/authStore";
+import { useGetProfile } from "../hooks/useGetProfile";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -30,6 +33,8 @@ const Navbar = () => {
   const location = useLocation(); 
   const navigate = useNavigate();
   const { token, logout } = useAuthStore();
+  const { data: profileResponse } = useGetProfile();
+  const profilePicture = profileResponse?.data?.profilePicture;
 
   const isOwnerDashboard = location.pathname === "/owner-dashboard"; 
 
@@ -101,7 +106,34 @@ const Navbar = () => {
           </ListItem>
         ))}
         {(token && token !== "null") && (
-          <ListItem disablePadding sx={{ mb: 1 }}>
+          <>
+            <ListItem disablePadding sx={{ mb: 1 }}>
+              <Button
+                component={Link}
+                to="/dealer-profile"
+                variant="outlined"
+                color="primary"
+                startIcon={
+                  profilePicture ? (
+                    <Avatar src={profilePicture} sx={{ width: 24, height: 24 }} />
+                  ) : (
+                    <AccountCircleIcon />
+                  )
+                }
+                fullWidth
+                sx={{
+                  justifyContent: "flex-start",
+                  py: 1.5,
+                  px: 2,
+                  borderRadius: "12px",
+                  textTransform: "none",
+                  fontWeight: 600,
+                }}
+              >
+                My Profile
+              </Button>
+            </ListItem>
+            <ListItem disablePadding sx={{ mb: 1 }}>
             <Button
   variant="outlined"
   color="error"
@@ -119,7 +151,8 @@ const Navbar = () => {
 >
   Logout
 </Button>
-          </ListItem>
+            </ListItem>
+          </>
         )}
       </List>
     </Box>
@@ -197,9 +230,25 @@ const Navbar = () => {
                   {isOwnerDashboard ? "Add Shop" : ((token && token !== "null") ? "Dashboard" : "Shop Portal")}
                 </Button>
                 {(token && token !== "null") && (
-                  <Button
-                    variant="outlined"
-                    color="error"
+                  <>
+                    <IconButton
+                      component={Link}
+                      to="/dealer-profile"
+                      color="primary"
+                      sx={{
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      {profilePicture ? (
+                        <Avatar src={profilePicture} sx={{ width: 32, height: 32 }} />
+                      ) : (
+                        <AccountCircleIcon sx={{ fontSize: 32 }} />
+                      )}
+                    </IconButton>
+                    <Button
+                      variant="outlined"
+                      color="error"
                     startIcon={<LogoutIcon />}
                     onClick={handleLogout}
                     sx={{
@@ -212,6 +261,7 @@ const Navbar = () => {
                   >
                     Logout
                   </Button>
+                  </>
                 )}
               </>
             ) : (
