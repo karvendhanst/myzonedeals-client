@@ -16,6 +16,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import { useCreateDeal } from '../hooks/useCreateDeal';
 
 /* ─── Field label ─── */
@@ -490,6 +491,7 @@ const AddDealsPage = () => {
                 { value: 'discount', label: 'Flat Discount', icon: <TrendingDownIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
                 { value: 'bogo', label: 'Buy & Get', icon: <CardGiftcardIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
                 { value: 'freebie', label: 'Free Gift', icon: <AutoAwesomeIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
+                { value: 'showcase', label: 'Showcase Only', icon: <StorefrontIcon sx={{ fontSize: '1.4rem', mb: 0.5 }} /> },
               ].map(opt => (
                 <Box
                   key={opt.value}
@@ -521,7 +523,7 @@ const AddDealsPage = () => {
           <Grid container spacing={2} sx={{ mb: 3 }}>
             {/* Base Price is ALWAYS required */}
             <Grid item xs={12} sm={form.dealType === 'discount' ? 6 : 12}>
-              <FieldLabel required>Original Price</FieldLabel>
+              <FieldLabel required>{form.dealType === 'showcase' ? 'Price' : 'Original Price'}</FieldLabel>
               <TextField
                 fullWidth
                 type="number"

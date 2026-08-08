@@ -287,6 +287,7 @@ const getDealSubLabel = (deal) => {
     return `Buy ${deal.bogoDetails.buyQty} Get ${deal.bogoDetails.getQty}`;
   }
   if (deal.dealType === 'freebie') return <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>Free Gift <CardGiftcardIcon sx={{ fontSize: 12 }} /></Box>;
+  if (deal.dealType === 'showcase') return `₹${deal.price}`;
   // discount or legacy
   return deal.dealPrice != null ? `₹${deal.dealPrice}` : '';
 };
@@ -533,6 +534,20 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
                 </Typography>
                 <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, color: "text.secondary", mt: 0.3 }}>
                   on purchase of ₹{deal.price}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          {dealType === 'showcase' && (
+            <Box sx={{ borderRadius: "16px", p: "16px 18px", bgcolor: "rgba(244,162,97,0.06)", border: "1px solid rgba(244,162,97,0.2)", display: "flex", alignItems: "center", gap: 1.5, position: "relative", overflow: "hidden" }}>
+              <Box sx={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(244,162,97,0.08)", pointerEvents: "none" }} />
+              <Box>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px" }}>
+                  Price
+                </Typography>
+                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 28, lineHeight: 1 }}>
+                  ₹{deal.price}
                 </Typography>
               </Box>
             </Box>

@@ -15,7 +15,11 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { useSignupMutation } from '../../api/useAuthMutations';
+import { useSignupMutation, useGoogleLoginMutation } from '../../api/useAuthMutations';
+import { GoogleLogin } from '@react-oauth/google';
+import useAuthStore from '../../store/authStore';
+import { useNavigate } from 'react-router-dom';
+import { Divider } from '@mui/material';
 
 const INITIAL = {
   name: '',
@@ -31,6 +35,21 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
 
   const { mutate: signup, isPending, error: apiError } = useSignupMutation({
     onSuccess: () => onSuccess(form.email),
+  });
+
+  const { login: authLogin } = useAuthStore();
+  const navigate = useNavigate();
+
+  const { mutate: googleLogin } = useGoogleLoginMutation({
+    onSuccess: (data) => {
+      if (data?.token) {
+        authLogin(data.token);
+        navigate('/owner-dashboard');
+      }
+    },
+    onError: (err) => {
+       console.error("Google signup failed", err);
+    },
   });
 
   const handleTab = (_, val) => {
@@ -221,6 +240,23 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
       >
         {isPending ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'Get Started'}
       </Button>
+
+      <Divider sx={{ my: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          OR
+        </Typography>
+      </Divider>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            googleLogin({ credential: credentialResponse.credential });
+          }}
+          onError={() => {
+            console.error('Signup Failed');
+          }}
+        />
+      </Box>
 
       {/* Footer */}
       <Typography variant="body2" align="center" color="text.secondary">

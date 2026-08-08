@@ -1509,10 +1509,10 @@ export default function AddShopForm() {
           <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 28 }}>
             <Field label="Pincode" error={errors.pincode} theme={theme}>
               <div style={{ position: "relative" }}>
-                <StyledInput theme={theme} name="pincode" value={form.pincode} readOnly disabled
-                  placeholder={isFetchingPincode ? "Fetching..." : "Auto-filled pincode"} 
+                <StyledInput theme={theme} name="pincode" value={form.pincode} onChange={handleChange}
+                  placeholder={isFetchingPincode ? "Fetching..." : "Enter 6-digit pincode"} 
                   hasError={!!errors.pincode} 
-                  style={{ background: isFetchingPincode ? theme.palette.background.default : "#f3f4f6", cursor: "not-allowed", color: "#6b7280" }}
+                  maxLength={6}
                 />
                 {isFetchingPincode && (
                   <div style={{ position: "absolute", right: 12, top: 14 }}>

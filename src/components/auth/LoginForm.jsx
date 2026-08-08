@@ -20,9 +20,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
-import { useLoginMutation,useResendOtpMutation } from '../../api/useAuthMutations';
+import { useLoginMutation, useResendOtpMutation, useGoogleLoginMutation } from '../../api/useAuthMutations';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import { GoogleLogin } from '@react-oauth/google';
 
 const INITIAL = { email: '', password: '' };
 
@@ -55,6 +56,19 @@ export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
       }
     },
   });
+
+  const { mutate: googleLogin } = useGoogleLoginMutation({
+    onSuccess: (data) => {
+      if (data?.token) {
+        authLogin(data.token);
+        navigate('/owner-dashboard'); 
+      }
+    },
+    onError: (err) => {
+       console.error("Google login failed", err);
+    },
+  });
+
   const handleTab = (_, val) => {
     if (val === 'signup') onSwitchToSignup();
   };
@@ -218,6 +232,22 @@ export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
         {isPending ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'Log In'}
       </Button>
 
+      <Divider sx={{ my: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          OR
+        </Typography>
+      </Divider>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            googleLogin({ credential: credentialResponse.credential });
+          }}
+          onError={() => {
+            console.error('Login Failed');
+          }}
+        />
+      </Box>
 
       {/* Footer */}
       <Typography variant="body2" align="center" color="text.secondary">

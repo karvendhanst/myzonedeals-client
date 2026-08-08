@@ -4,6 +4,7 @@ import {
   verifyEmailOtp,
   resendOtp,
   loginDealer,
+  googleLoginDealer,
 } from './authApi';
 
 // ─── Signup Mutation ──────────────────────────────────────────────────────────
@@ -33,6 +34,12 @@ export const useResendOtpMutation = (options = {}) =>
 export const useLoginMutation = (options = {}) =>
   useMutation({
     mutationFn: loginDealer,
+    ...options,
+  });
+
+export const useGoogleLoginMutation = (options = {}) =>
+  useMutation({
+    mutationFn: googleLoginDealer,
     ...options,
   });
 

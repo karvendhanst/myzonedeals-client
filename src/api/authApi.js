@@ -48,3 +48,12 @@ export const loginDealer = async ({ email, password }) => {
   return handleResponse(res);
 };
 
+export const googleLoginDealer = async ({ credential }) => {
+  const res = await fetch(`${BASE_URL}/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credential }),
+  });
+  return handleResponse(res);
+};
+
