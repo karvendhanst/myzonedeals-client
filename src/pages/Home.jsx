@@ -27,7 +27,7 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 
 import L from "leaflet";
 
-const DRAWER_BLEEDING = 64;
+const DRAWER_BLEEDING = 70;
 
 const createClusterCustomIcon = (cluster) => {
   const count = cluster.getChildCount();
@@ -217,6 +217,33 @@ const Home = () => {
       <Box
         sx={{ flex: 1, position: "relative", height: "100%", width: "100%" }}
       >
+        {/* Map type toggle — rendered outside MapContainer so it is never clipped */}
+        <Stack
+          spacing={1}
+          sx={{
+            position: "absolute",
+            right: 16,
+            bottom: { xs: DRAWER_BLEEDING + 16, md: 24 },
+            zIndex: 1200,
+          }}
+        >
+          <Fab
+            size="small"
+            color={mapType === "road" ? "primary" : "default"}
+            onClick={() => setMapType("road")}
+          >
+            <MapIcon />
+          </Fab>
+
+          <Fab
+            size="small"
+            color={mapType === "satellite" ? "primary" : "default"}
+            onClick={() => setMapType("satellite")}
+          >
+            <SatelliteAltIcon />
+          </Fab>
+        </Stack>
+
         <Box
           sx={{
             position: "absolute",
@@ -258,31 +285,6 @@ const Home = () => {
           zoomControl={false}
           style={{ height: "100%", width: "100%" }}
         >
-          <Stack
-            spacing={1}
-            sx={{
-              position: "absolute",
-              right: 16,
-              bottom: 24,
-              zIndex: 1000,
-            }}
-          >
-            <Fab
-              size="small"
-              color={mapType === "road" ? "primary" : "default"}
-              onClick={() => setMapType("road")}
-            >
-              <MapIcon />
-            </Fab>
-
-            <Fab
-              size="small"
-              color={mapType === "satellite" ? "primary" : "default"}
-              onClick={() => setMapType("satellite")}
-            >
-              <SatelliteAltIcon />
-            </Fab>
-          </Stack>
 
           <TileLayer
             attribution={

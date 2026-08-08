@@ -171,13 +171,18 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
           width: 46, height: 46, borderRadius: '12px',
           overflow: 'hidden', flexShrink: 0,
           border: `1px solid ${T.border}`,
-          background: T.bgDefault,
+          background: shop.shopImage ? T.bgDefault : '#EEF2FF',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <img
-            src={shop.shopImage || 'https://via.placeholder.com/50x50?text=S'}
-            alt={shop.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          {shop.shopImage ? (
+            <img
+              src={shop.shopImage}
+              alt={shop.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <StorefrontIcon style={{ fontSize: 26, color: '#6366F1', opacity: 0.85 }} />
+          )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
@@ -248,13 +253,18 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
           width: 38, height: 38, borderRadius: '10px',
           overflow: 'hidden', flexShrink: 0,
           border: `1px solid ${T.border}`,
-          background: T.bgDefault,
+          background: shop.shopImage ? T.bgDefault : '#EEF2FF',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <img
-            src={shop.shopImage || 'https://via.placeholder.com/38x38?text=S'}
-            alt={shop.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          {shop.shopImage ? (
+            <img
+              src={shop.shopImage}
+              alt={shop.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <StorefrontIcon style={{ fontSize: 22, color: '#6366F1', opacity: 0.85 }} />
+          )}
         </div>
         <div style={{ overflow: 'hidden' }}>
           <div style={{
