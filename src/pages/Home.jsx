@@ -20,6 +20,8 @@ import "../styles/map.css";
 import { customIcon } from "../components/pinIcon";
 import { useGetMapDeals } from "../hooks/useGetMapDeals";
 import MapSearch from "../components/MapSearch";
+import LocationModal from "../components/LocationModal";
+import { useMap } from "react-leaflet";
 import { Fab, Stack } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
@@ -43,12 +45,30 @@ const createClusterCustomIcon = (cluster) => {
   });
 };
 
+const CenterUpdater = ({ center }) => {
+  const map = useMap();
+  React.useEffect(() => {
+    if (center) {
+      map.flyTo(center, 13);
+    }
+  }, [center, map]);
+  return null;
+};
+
 const Home = () => {
   const { data: deals = [] } = useGetMapDeals();
   const [selectedShopDeals, setSelectedShopDeals] = useState(null);
   const [selectedDealIndex, setSelectedDealIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [mapType, setMapType] = useState("road");
+
+  const [userLocation, setUserLocation] = useState(() => {
+    const saved = localStorage.getItem("userLocation");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const defaultCenter = [10.967287, 78.061949];
+  const mapCenter = userLocation ? [userLocation.lat, userLocation.lon] : defaultCenter;
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -101,8 +121,18 @@ const Home = () => {
     setOpen(false);
   };
 
-  const bestPriceFor = (group) =>
-    Math.min(...group.deals.map((d) => d.dealPrice));
+  const getDealLabel = (group) => {
+    const discountDeals = group.deals.filter(
+      (d) => d.dealType === "discount" && typeof d.dealPrice === "number"
+    );
+    if (discountDeals.length > 0) {
+      const minPrice = Math.min(...discountDeals.map((d) => d.dealPrice));
+      return `From ₹${minPrice}`;
+    }
+    if (group.deals.some((d) => d.dealType === "bogo")) return "BOGO Deals";
+    if (group.deals.some((d) => d.dealType === "freebie")) return "Free Offers";
+    return "Deals Available";
+  };
 
   return (
     <Box
@@ -280,11 +310,12 @@ const Home = () => {
         </Box>
 
         <MapContainer
-          center={[10.967287, 78.061949]}
+          center={mapCenter}
           zoom={13}
           zoomControl={false}
           style={{ height: "100%", width: "100%" }}
         >
+          <CenterUpdater center={mapCenter} />
 
           <TileLayer
             attribution={
@@ -359,7 +390,7 @@ const Home = () => {
                     </div>
                     <div className="dt-body">
                       <p className="dt-label">
-                        From ₹{bestPriceFor(group)} · {group.deals.length} deal
+                        {getDealLabel(group)} · {group.deals.length} deal
                         {group.deals.length > 1 ? "s" : ""}
                       </p>
                       <div className="dt-footer">
@@ -372,6 +403,7 @@ const Home = () => {
             ))}
           </MarkerClusterGroup>
         </MapContainer>
+        <LocationModal open={!userLocation} onLocationSelect={setUserLocation} />
       </Box>
     </Box>
   );

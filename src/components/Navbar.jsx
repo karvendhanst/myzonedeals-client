@@ -231,6 +231,20 @@ const Navbar = () => {
                 </Button>
                 {(token && token !== "null") && (
                   <>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<LogoutIcon />}
+                      onClick={handleLogout}
+                      sx={{
+                        borderRadius: "30px",
+                        padding: "8px 20px",
+                        textTransform: "none",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Logout
+                    </Button>
                     <IconButton
                       component={Link}
                       to="/dealer-profile"
@@ -246,21 +260,6 @@ const Navbar = () => {
                         <AccountCircleIcon sx={{ fontSize: 32 }} />
                       )}
                     </IconButton>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                    startIcon={<LogoutIcon />}
-                    onClick={handleLogout}
-                    sx={{
-                      borderRadius: "30px",
-                      padding: "8px 20px",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      mr: "auto",
-                    }}
-                  >
-                    Logout
-                  </Button>
                   </>
                 )}
               </>

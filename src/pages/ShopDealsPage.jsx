@@ -264,25 +264,36 @@ const DealRow = ({ deal, index, onEdit }) => {
 
       {/* Deal price */}
       <div style={{ minWidth: 0 }}>
-        <div style={{
-          fontFamily: T.font, fontWeight: 800, fontSize: '15px',
-          color: T.textPrimary, letterSpacing: '-0.3px',
-        }}>
-          ₹{deal.dealPrice}
-        </div>
-        {deal.price && (
+        {deal.dealType === 'discount' && deal.dealPrice ? (
+          <>
+            <div style={{
+              fontFamily: T.font, fontWeight: 800, fontSize: '15px',
+              color: T.textPrimary, letterSpacing: '-0.3px',
+            }}>
+              ₹{deal.dealPrice}
+            </div>
+            {deal.price && (
+              <div style={{
+                fontFamily: T.font, fontWeight: 400, fontSize: '11px',
+                color: T.textSecondary, textDecoration: 'line-through', marginTop: 1,
+              }}>
+                ₹{deal.price}
+              </div>
+            )}
+          </>
+        ) : (
           <div style={{
-            fontFamily: T.font, fontWeight: 400, fontSize: '11px',
-            color: T.textSecondary, textDecoration: 'line-through', marginTop: 1,
+            fontFamily: T.font, fontWeight: 800, fontSize: '15px',
+            color: T.textPrimary, letterSpacing: '-0.3px',
           }}>
-            ₹{deal.price}
+            {deal.price ? `₹${deal.price}` : 'Free'}
           </div>
         )}
       </div>
 
       {/* Discount badge */}
       <div className="sd-col-discount" style={{ minWidth: 0 }}>
-        {hasDiscount ? (
+        {deal.dealType === 'discount' && hasDiscount ? (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '3px 9px', borderRadius: 20,
@@ -292,6 +303,26 @@ const DealRow = ({ deal, index, onEdit }) => {
           }}>
             <LocalOfferIcon sx={{ fontSize: 12 }} /> {deal.discountPercent}% OFF
           </span>
+        ) : deal.dealType === 'bogo' ? (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            padding: '3px 9px', borderRadius: 20,
+            fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+            background: T.warningBg, color: T.warning,
+            whiteSpace: 'nowrap',
+          }}>
+            <LocalOfferIcon sx={{ fontSize: 12 }} /> BOGO
+          </span>
+        ) : deal.dealType === 'freebie' ? (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            padding: '3px 9px', borderRadius: 20,
+            fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+            background: '#E0E7FF', color: '#4338CA',
+            whiteSpace: 'nowrap',
+          }}>
+            <LocalOfferIcon sx={{ fontSize: 12 }} /> FREEBIE
+          </span>
         ) : (
           <span style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, opacity: 0.4 }}>—</span>
         )}
@@ -299,7 +330,7 @@ const DealRow = ({ deal, index, onEdit }) => {
 
       {/* Savings */}
       <div className="sd-col-savings" style={{ minWidth: 0 }}>
-        {saving !== null && saving > 0 ? (
+        {deal.dealType === 'discount' && saving !== null && saving > 0 ? (
           <div style={{
             fontFamily: T.font, fontWeight: 600, fontSize: '13px', color: T.success,
             whiteSpace: 'nowrap',
@@ -386,18 +417,29 @@ const DealCard = ({ deal, index, onEdit }) => {
         <div style={{
           display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8, flexWrap: 'wrap',
         }}>
-          <span style={{
-            fontFamily: T.font, fontWeight: 800, fontSize: '16px',
-            color: T.textPrimary, letterSpacing: '-0.3px',
-          }}>
-            ₹{deal.dealPrice}
-          </span>
-          {deal.price && (
+          {deal.dealType === 'discount' && deal.dealPrice ? (
+            <>
+              <span style={{
+                fontFamily: T.font, fontWeight: 800, fontSize: '16px',
+                color: T.textPrimary, letterSpacing: '-0.3px',
+              }}>
+                ₹{deal.dealPrice}
+              </span>
+              {deal.price && (
+                <span style={{
+                  fontFamily: T.font, fontWeight: 400, fontSize: '12px',
+                  color: T.textSecondary, textDecoration: 'line-through',
+                }}>
+                  ₹{deal.price}
+                </span>
+              )}
+            </>
+          ) : (
             <span style={{
-              fontFamily: T.font, fontWeight: 400, fontSize: '12px',
-              color: T.textSecondary, textDecoration: 'line-through',
+              fontFamily: T.font, fontWeight: 800, fontSize: '16px',
+              color: T.textPrimary, letterSpacing: '-0.3px',
             }}>
-              ₹{deal.price}
+              {deal.price ? `₹${deal.price}` : 'Free'}
             </span>
           )}
         </div>
@@ -406,7 +448,7 @@ const DealCard = ({ deal, index, onEdit }) => {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap',
         }}>
-          {hasDiscount && (
+          {deal.dealType === 'discount' && hasDiscount ? (
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '3px 9px', borderRadius: 20,
@@ -415,8 +457,26 @@ const DealCard = ({ deal, index, onEdit }) => {
             }}>
               <LocalOfferIcon sx={{ fontSize: 12 }} /> {deal.discountPercent}% OFF
             </span>
+          ) : deal.dealType === 'bogo' ? (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '3px 9px', borderRadius: 20,
+              fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+              background: T.warningBg, color: T.warning,
+            }}>
+              <LocalOfferIcon sx={{ fontSize: 12 }} /> BOGO
+            </span>
+          ) : deal.dealType === 'freebie' && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '3px 9px', borderRadius: 20,
+              fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+              background: '#E0E7FF', color: '#4338CA',
+            }}>
+              <LocalOfferIcon sx={{ fontSize: 12 }} /> FREEBIE
+            </span>
           )}
-          {saving !== null && saving > 0 && (
+          {deal.dealType === 'discount' && saving !== null && saving > 0 && (
             <span style={{
               fontFamily: T.font, fontWeight: 600, fontSize: '12px', color: T.success,
             }}>
@@ -715,7 +775,7 @@ const ShopDealsPage = () => {
                 borderBottom: `1px solid ${T.border}`,
                 background: '#F9FAFB',
               }}>
-                {['#', '', 'Deal', 'Price', 'Discount', 'You Save', 'Photos'].map((h, i) => {
+                {['#', '', 'Deal', 'Price', 'Offer Type', 'You Save', 'Photos'].map((h, i) => {
                   const extraClass = i === 4 ? 'sd-col-discount' : i === 5 ? 'sd-col-savings' : '';
                   return (
                     <span key={i} className={extraClass} style={{
