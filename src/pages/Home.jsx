@@ -18,7 +18,7 @@ import DealDetailPanel from "../components/DealDetailPanel";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import "../styles/map.css";
 import { customIcon } from "../components/pinIcon";
-import { useGetMapDeals } from "../hooks/useGetMapDeals";
+import { useMapListings } from "../hooks/useListings";
 import MapSearch from "../components/MapSearch";
 import LocationModal from "../components/LocationModal";
 import { useMap } from "react-leaflet";
@@ -56,9 +56,9 @@ const CenterUpdater = ({ center }) => {
 };
 
 const Home = () => {
-  const { data: deals = [] } = useGetMapDeals();
-  const [selectedShopDeals, setSelectedShopDeals] = useState(null);
-  const [selectedDealIndex, setSelectedDealIndex] = useState(0);
+  const { data: listings = [] } = useMapListings();
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const [mapType, setMapType] = useState("road");
 
@@ -73,15 +73,18 @@ const Home = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const shopGroups = useMemo(() => {
+  const mapGroups = useMemo(() => {
     const groups = {};
     const seenCoords = {};
 
-    deals.forEach((deal) => {
-      const key = String(deal.shopId);
+    listings.forEach((listing) => {
+      // Group by shopId if it's a shop, otherwise by coordinate
+      const isShop = listing.source?.type === 'SHOP';
+      const key = isShop && listing.shopId ? `shop_${listing.shopId}` : `coord_${listing.latitude}_${listing.longitude}`;
+      
       if (!groups[key]) {
-        const lat = Number(deal.latitude);
-        const lng = Number(deal.longitude);
+        const lat = Number(listing.latitude);
+        const lng = Number(listing.longitude);
         const posKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
         const count = seenCoords[posKey] ?? 0;
         seenCoords[posKey] = count + 1;
@@ -92,46 +95,46 @@ const Home = () => {
         const jLng = count === 0 ? lng : lng + jitter * Math.sin(angle);
 
         groups[key] = {
-          shopId: key,
-          shopName: deal.shopName,
-          shopImage: deal.shopImage,
+          id: key,
+          name: isShop ? listing.shopName : "Individual Listings",
+          image: isShop ? listing.shopImage : null,
           latitude: jLat,
           longitude: jLng,
-          deals: [],
+          listings: [],
         };
       }
-      groups[key].deals.push(deal);
+      groups[key].listings.push(listing);
     });
     return Object.values(groups);
-  }, [deals]);
+  }, [listings]);
 
-  const selectedDeal = selectedShopDeals
-    ? selectedShopDeals.deals[selectedDealIndex]
+  const selectedListing = selectedGroup
+    ? selectedGroup.listings[selectedIndex]
     : null;
 
-  const handleMarkerClick = (shopGroup) => {
-    setSelectedShopDeals(shopGroup);
-    setSelectedDealIndex(0);
+  const handleMarkerClick = (group) => {
+    setSelectedGroup(group);
+    setSelectedIndex(0);
     if (isMobile) setOpen(true);
   };
 
   const handleClose = () => {
-    setSelectedShopDeals(null);
-    setSelectedDealIndex(0);
+    setSelectedGroup(null);
+    setSelectedIndex(0);
     setOpen(false);
   };
 
-  const getDealLabel = (group) => {
-    const discountDeals = group.deals.filter(
-      (d) => d.dealType === "discount" && typeof d.dealPrice === "number"
+  const getGroupLabel = (group) => {
+    const discountDeals = group.listings.filter(
+      (d) => d.metadata?.dealType === "discount" && typeof d.metadata?.dealPrice === "number"
     );
     if (discountDeals.length > 0) {
-      const minPrice = Math.min(...discountDeals.map((d) => d.dealPrice));
+      const minPrice = Math.min(...discountDeals.map((d) => d.metadata.dealPrice));
       return `From ₹${minPrice}`;
     }
-    if (group.deals.some((d) => d.dealType === "bogo")) return "BOGO Deals";
-    if (group.deals.some((d) => d.dealType === "freebie")) return "Free Offers";
-    return "Deals Available";
+    if (group.listings.some((d) => d.metadata?.dealType === "bogo")) return "BOGO Deals";
+    if (group.listings.some((d) => d.metadata?.dealType === "freebie")) return "Free Offers";
+    return `${group.listings.length} item${group.listings.length > 1 ? 's' : ''}`;
   };
 
   return (
@@ -169,10 +172,10 @@ const Home = () => {
           }}
         >
           <DealDetailPanel
-            deal={selectedDeal}
-            allDeals={selectedShopDeals?.deals}
-            selectedIndex={selectedDealIndex}
-            onSelectDeal={setSelectedDealIndex}
+            deal={selectedListing}
+            allDeals={selectedGroup?.listings}
+            selectedIndex={selectedIndex}
+            onSelectDeal={setSelectedIndex}
             onClose={handleClose}
           />
         </Box>
@@ -228,15 +231,15 @@ const Home = () => {
             <Typography
               sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary" }}
             >
-              {selectedDeal ? selectedDeal.shopName : "Tap a marker"}
+              {selectedGroup ? selectedGroup.name : "Tap a marker"}
             </Typography>
           </Box>
           <Box sx={{ height: "100%", overflowY: "auto" }}>
             <DealDetailPanel
-              deal={selectedDeal}
-              allDeals={selectedShopDeals?.deals}
-              selectedIndex={selectedDealIndex}
-              onSelectDeal={setSelectedDealIndex}
+              deal={selectedListing}
+              allDeals={selectedGroup?.listings}
+              selectedIndex={selectedIndex}
+              onSelectDeal={setSelectedIndex}
               onClose={handleClose}
             />
           </Box>
@@ -305,8 +308,7 @@ const Home = () => {
               bgcolor: "#4ade80",
             }}
           />
-          {shopGroups.length} shop{shopGroups.length !== 1 ? "s" : ""} with live
-          deals
+          {mapGroups.length} location{mapGroups.length !== 1 ? "s" : ""}
         </Box>
 
         <MapContainer
@@ -348,9 +350,9 @@ const Home = () => {
             animate={true}
             maxClusterRadius={60}
           >
-            {shopGroups.map((group) => (
+            {mapGroups.map((group) => (
               <Marker
-                key={group.shopId}
+                key={group.id}
                 position={[Number(group.latitude), Number(group.longitude)]}
                 icon={customIcon}
                 eventHandlers={{
@@ -365,17 +367,19 @@ const Home = () => {
                 >
                   <div className="dt-card">
                     <div className="dt-header">
-                      <div className="dt-logo">
-                        <img
-                          src={group.shopImage}
-                          alt={group.shopName}
-                          width="100%"
-                          height="100%"
-                        />
-                      </div>
+                      {group.image && (
+                        <div className="dt-logo">
+                          <img
+                            src={group.image}
+                            alt={group.name}
+                            width="100%"
+                            height="100%"
+                          />
+                        </div>
+                      )}
                       <div>
-                        <p className="dt-name">{group.shopName}</p>
-                        <p className="dt-type">{group.deals[0]?.category}</p>
+                        <p className="dt-name">{group.name}</p>
+                        <p className="dt-type">{group.listings[0]?.categoryName || group.listings[0]?.listingType}</p>
                       </div>
                       <span
                         className="dt-live"
@@ -390,8 +394,7 @@ const Home = () => {
                     </div>
                     <div className="dt-body">
                       <p className="dt-label">
-                        {getDealLabel(group)} · {group.deals.length} deal
-                        {group.deals.length > 1 ? "s" : ""}
+                        {getGroupLabel(group)}
                       </p>
                       <div className="dt-footer">
                         <span className="dt-active">Tap for details</span>

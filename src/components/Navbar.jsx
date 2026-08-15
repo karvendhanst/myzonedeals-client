@@ -23,6 +23,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import PostAddIcon from "@mui/icons-material/PostAdd";
 import useAuthStore from "../store/authStore";
 import { useGetProfile } from "../hooks/useGetProfile";
 
@@ -80,6 +81,28 @@ const Navbar = () => {
         </Typography>
       </Box>
       <List sx={{ px: 2 }}>
+        {/* Post Something — top of mobile drawer */}
+        {(token && token !== "null") && (
+          <ListItem disablePadding sx={{ mb: 1.5 }}>
+            <Button
+              component={Link}
+              to="/post"
+              variant="contained"
+              startIcon={<PostAddIcon />}
+              fullWidth
+              sx={{
+                justifyContent: "center",
+                py: 1.5,
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontWeight: 700,
+                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+              }}
+            >
+              <ListItemText primary="Post Something" primaryTypographyProps={{ fontWeight: 700 }} />
+            </Button>
+          </ListItem>
+        )}
         {navItems.map((item) => (
           <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
             <Button
@@ -212,6 +235,26 @@ const Navbar = () => {
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 3 } }}>
             {!isMobile ? (
               <>
+                {/* Post Something — primary CTA (visible only when logged in) */}
+                {(token && token !== "null") && (
+                  <Button
+                    component={Link}
+                    to="/post"
+                    variant="contained"
+                    startIcon={<PostAddIcon />}
+                    sx={{
+                      background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                      borderRadius: "30px",
+                      padding: "8px 20px",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      boxShadow: "0 4px 14px #6366f133",
+                      "&:hover": { background: "#6366f1" },
+                    }}
+                  >
+                    Post Something
+                  </Button>
+                )}
 
                 <Button
                   component={Link}
