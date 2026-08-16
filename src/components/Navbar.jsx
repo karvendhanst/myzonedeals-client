@@ -96,10 +96,16 @@ const Navbar = () => {
                 borderRadius: '12px',
                 textTransform: 'none',
                 fontWeight: 700,
-                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                backgroundColor: 'secondary.main',
+                color: '#fff',
+                '& .MuiButton-startIcon': { color: '#fff' },
+                '&:hover': { backgroundColor: '#E58D4D' },
               }}
             >
-              <ListItemText primary="Post Something" primaryTypographyProps={{ fontWeight: 700 }} />
+              <ListItemText
+                primary="Post Something"
+                primaryTypographyProps={{ fontWeight: 700, color: '#fff' }}
+              />
             </Button>
           </ListItem>
         )}
@@ -243,13 +249,15 @@ const Navbar = () => {
                     variant="contained"
                     startIcon={<PostAddIcon />}
                     sx={{
-                      background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                      backgroundColor: "secondary.main",
+                      color: "#fff",
+                      "& .MuiButton-startIcon": { color: "#fff" },
                       borderRadius: "30px",
                       padding: "8px 20px",
                       textTransform: "none",
                       fontWeight: 700,
-                      boxShadow: "0 4px 14px #6366f133",
-                      "&:hover": { background: "#6366f1" },
+                      boxShadow: "0 4px 14px rgba(244, 162, 97, 0.24)",
+                      "&:hover": { backgroundColor: "#E58D4D" },
                     }}
                   >
                     Post Something
@@ -270,7 +278,7 @@ const Navbar = () => {
                     "&:hover": { backgroundColor: "#1E293B" },
                   }}
                 >
-                  {isOwnerDashboard ? "Add Shop" : ((token && token !== "null") ? "Dashboard" : "Shop Portal")}
+                  {isOwnerDashboard ? "Add Shop" : ((token && token !== "null") ? "Shop Deals" : "Shop Portal")}
                 </Button>
                 {(token && token !== "null") && (
                   <>

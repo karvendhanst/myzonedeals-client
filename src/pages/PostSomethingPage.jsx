@@ -123,7 +123,7 @@ export default function PostSomethingPage() {
     <Box
       sx={{
         minHeight: 'calc(100vh - 72px)',
-        bgcolor: '#F8F8FB',
+        bgcolor: 'background.default',
         py: { xs: 5, sm: 7, md: 9 },
         px: 2,
       }}
@@ -134,7 +134,7 @@ export default function PostSomethingPage() {
           <Typography
             variant="h3"
             sx={{
-              color: '#14141a',
+              color: 'text.primary',
               fontFamily: '"Plus Jakarta Sans",sans-serif',
               fontWeight: 800,
               letterSpacing: '-0.02em',
@@ -158,15 +158,15 @@ export default function PostSomethingPage() {
                 width: 56,
                 height: 3,
                 borderRadius: 3,
-                background: 'linear-gradient(90deg,#6366f1,#8b5cf6)',
+                background: 'linear-gradient(90deg,#F4A261,#E58D4D)',
               }}
             />
-            <AutoAwesomeIcon sx={{ fontSize: 16, color: '#8b5cf6' }} />
+            <AutoAwesomeIcon sx={{ fontSize: 16, color: 'secondary.main' }} />
           </Stack>
 
           <Typography
             variant="body1"
-            sx={{ color: '#6b7280', fontSize: 16, maxWidth: 480, mx: 'auto' }}
+            sx={{ color: 'text.secondary', fontSize: 16, maxWidth: 480, mx: 'auto' }}
           >
             Choose a listing type to get started. No shop required for individual listings.
           </Typography>
@@ -184,8 +184,8 @@ export default function PostSomethingPage() {
                     position: 'relative',
                     height: '100%',
                     borderRadius: 4,
-                    bgcolor: '#fff',
-                    border: '1px solid #ECECF3',
+                    bgcolor: 'background.paper',
+                    border: '1px solid #E5E7EB',
                     overflow: 'hidden',
                     width: "340px",
                     opacity: locked ? 0.65 : 1,
@@ -194,7 +194,7 @@ export default function PostSomethingPage() {
                       ? {}
                       : {
                           transform: 'translateY(-4px)',
-                          boxShadow: '0 16px 36px rgba(20,20,26,0.08)',
+                          boxShadow: '0 16px 36px rgba(15,23,42,0.10)',
                           borderColor: `${lt.color}55`,
                         },
                   }}
@@ -277,7 +277,7 @@ export default function PostSomethingPage() {
                       <Typography
                         variant="h6"
                         sx={{
-                          color: '#14141a',
+                          color: 'text.primary',
                           fontFamily: '"Plus Jakarta Sans",sans-serif',
                           fontWeight: 700,
                           fontSize: 19,
@@ -289,7 +289,7 @@ export default function PostSomethingPage() {
 
                       <Typography
                         variant="body2"
-                        sx={{ color: '#6b7280', lineHeight: 1.6, fontSize: 14.5, mb: 2.5 }}
+                        sx={{ color: 'text.secondary', lineHeight: 1.6, fontSize: 14.5, mb: 2.5 }}
                       >
                         {lt.description}
                       </Typography>
@@ -370,13 +370,13 @@ export default function PostSomethingPage() {
                         fontFamily: '"Plus Jakarta Sans",sans-serif',
                         fontWeight: 700,
                         fontSize: 15.5,
-                        color: '#14141a',
+                        color: 'text.primary',
                         mb: 0.25,
                       }}
                     >
                       {item.title}
                     </Typography>
-                    <Typography sx={{ color: '#6b7280', fontSize: 13.5, lineHeight: 1.5 }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 13.5, lineHeight: 1.5 }}>
                       {item.description}
                     </Typography>
                   </Box>

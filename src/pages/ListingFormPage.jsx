@@ -1554,7 +1554,7 @@ export default function ListingFormPage() {
 
   /* ── Shared field style ── */
   const inputSx = {
-    '& .MuiInputBase-root': { bgcolor: '#fff', borderRadius: 2, fontSize: 15.5 },
+    '& .MuiInputBase-root': { bgcolor: 'background.paper', borderRadius: 2, fontSize: 15.5 },
     '& .MuiInputLabel-root': { display: 'none' },
     '& .MuiInputBase-input': { color: '#1a1a1a', py: { xs: 1.1, sm: 1.75 } },
     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
@@ -1564,12 +1564,12 @@ export default function ListingFormPage() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#FAFAF8' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* ── Sticky top bar ── */}
       <Box
         sx={{
           position: 'sticky', top: 0, zIndex: 10,
-          bgcolor: '#FAFAF8', borderBottom: '1px solid #EEEEEE',
+          bgcolor: 'background.default', borderBottom: '1px solid #E5E7EB',
         }}
       >
         <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
@@ -1611,11 +1611,11 @@ export default function ListingFormPage() {
               onClick={handleSubmit}
               disabled={createMutation.isPending}
               sx={{
-                bgcolor: '#111827', color: '#fff', borderRadius: 2,
+                bgcolor: 'secondary.main', color: 'text.primary', borderRadius: 2,
                 px: { xs: 1.75, sm: 2.5 }, py: 0.9, fontSize: 12.5, fontWeight: 700,
                 letterSpacing: '0.04em', flexShrink: 0,
-                '&:hover': { bgcolor: '#000' },
-                '&.Mui-disabled': { bgcolor: '#111827', opacity: 0.6, color: '#fff' },
+                '&:hover': { bgcolor: '#E58D4D' },
+                '&.Mui-disabled': { bgcolor: 'secondary.main', opacity: 0.6, color: 'text.primary' },
               }}
             >
               {createMutation.isPending ? <CircularProgress size={16} color="inherit" /> : 'PUBLISH'}
@@ -1977,9 +1977,9 @@ export default function ListingFormPage() {
             sx={{
               mt: 1, py: 1.6, borderRadius: 2.5, fontWeight: 700, fontSize: 15,
               letterSpacing: '0.02em',
-              bgcolor: '#111827', color: '#fff',
-              '&:hover': { bgcolor: '#000' },
-              '&.Mui-disabled': { bgcolor: '#111827', opacity: 0.6, color: '#fff' },
+              bgcolor: 'secondary.main', color: 'text.primary',
+              '&:hover': { bgcolor: '#E58D4D' },
+              '&.Mui-disabled': { bgcolor: 'secondary.main', opacity: 0.6, color: 'text.primary' },
             }}
           >
             {createMutation.isPending ? <CircularProgress size={20} color="inherit" /> : 'Publish Listing'}
