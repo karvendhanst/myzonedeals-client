@@ -26,71 +26,65 @@
 }
 
 
-.deal-tooltip .leaflet-tooltip {
-  padding: 0 !important;
-  border: none !important;
-  border-radius: 16px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.13) !important;
+.map-marker-icon {
   background: transparent !important;
-  width: 240px;
+  border: 0 !important;
 }
 
-.dt-header {
-  background: linear-gradient(135deg,#FF6B35,#FF8C42);
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.map-pin {
+  --pin-start: #6366f1;
+  --pin-end: #4338ca;
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  border-radius: 12px 12px 12px 4px;
+  background: linear-gradient(145deg, var(--pin-start), var(--pin-end));
+  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.22), 0 2px 4px rgba(15, 23, 42, 0.12);
+  transform: rotate(-45deg);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+  transform-origin: 50% 50%;
 }
 
-.dt-logo {
-  width:36px;height:36px;
-  background:#fff;border-radius:10px;
-  display:flex;align-items:center;
-  justify-content:center;font-size:18px;
-  border-radius: 50%;
-  overflow: hidden;
+.map-pin__icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  transform: rotate(45deg);
+  color: #fff;
 }
 
-.dt-name { margin:0;font-size:13px;
-  font-weight:600;color:#fff; }
-.dt-type { margin:0;font-size:10px;
-  color:rgba(255,255,255,0.8); }
-
-.dt-live {
-  margin-left:auto;
-  background:rgba(255,255,255,0.25);
-  border:1px solid rgba(255,255,255,0.4);
-  border-radius:20px;padding:2px 8px;
-  font-size:9px;color:#fff;font-weight:600;
+.map-pin__icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.dt-body { padding:12px 14px 14px;
-  background:#fff;border-radius:0 0 16px 16px; }
-.dt-label { margin:0 0 4px;font-size:10px;
-  color:#FF6B35;font-weight:600;
-  letter-spacing:0.8px; }
-.dt-deal { margin:0 0 12px;font-size:14px;
-  ;color:#1a1a1a; max-width: 250px; text-wrap: wrap; }
+.map-pin__point { display: none; }
+.map-pin--deal { --pin-start: #fb923c; --pin-end: #ea580c; }
+.map-pin--sell { --pin-start: #818cf8; --pin-end: #4f46e5; }
+.map-pin--rent { --pin-start: #38bdf8; --pin-end: #0284c7; }
+.map-pin--service { --pin-start: #34d399; --pin-end: #059669; }
+.map-pin--event { --pin-start: #fbbf24; --pin-end: #d97706; }
+.map-pin--giveaway { --pin-start: #f472b6; --pin-end: #db2777; }
 
-.dt-footer { display:flex;
-  justify-content:space-between;align-items:center; }
-.dt-active { font-size:11px;color:#22c55e;
-  font-weight:600; }
-
-.dt-card{
-  max-width: 250px;
+.map-pin:hover,
+.leaflet-marker-icon:focus-visible .map-pin {
+  filter: saturate(1.08) brightness(1.04);
+  transform: rotate(-45deg) translate(-1px, -3px) scale(1.08);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.27), 0 3px 6px rgba(15, 23, 42, 0.14);
 }
 
-  .deal-popup .leaflet-popup-content-wrapper {
-  padding: 0 !important;
-  border-radius: 20px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
-  overflow: hidden;
-}
-.deal-popup .leaflet-popup-content {
-  margin: 0 !important;
-  width: auto !important;
+.map-pin.is-active {
+  transform: rotate(-45deg) translate(-1px, -3px) scale(1.13);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.72), 0 9px 18px rgba(15, 23, 42, 0.3);
 }
 
 /* ─── Directions: user-location dot ──────────────────────────────────────── */

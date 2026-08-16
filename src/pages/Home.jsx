@@ -3,7 +3,6 @@ import {
   MapContainer,
   TileLayer,
   Marker,
-  Tooltip,
   ZoomControl,
 } from "react-leaflet";
 import {
@@ -15,9 +14,8 @@ import {
   Typography,
 } from "@mui/material";
 import DealDetailPanel from "../components/DealDetailPanel";
-import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import "../styles/map.css";
-import { customIcon } from "../components/pinIcon";
+import { getMapIcon } from "../components/pinIcon";
 import { useMapListings } from "../hooks/useListings";
 import MapSearch from "../components/MapSearch";
 import LocationModal from "../components/LocationModal";
@@ -167,7 +165,7 @@ const Home = () => {
     setOpen(false);
   };
 
-  const getGroupLabel = (group) => {
+  const _getGroupLabel = (group) => {
     const discountDeals = group.listings.filter(
       (d) => d.metadata?.dealType === "discount" && typeof d.metadata?.dealPrice === "number"
     );
@@ -336,55 +334,11 @@ const Home = () => {
               <Marker
                 key={group.id}
                 position={[Number(group.latitude), Number(group.longitude)]}
-                icon={customIcon}
+                icon={getMapIcon(group, selectedGroup?.id === group.id)}
                 eventHandlers={{
                   click: () => handleMarkerClick(group),
                 }}
-              >
-                <Tooltip
-                  direction="top"
-                  offset={[0, -20]}
-                  opacity={1}
-                  permanent={false}
-                >
-                  <div className="dt-card">
-                    <div className="dt-header">
-                      {group.image && (
-                        <div className="dt-logo">
-                          <img
-                            src={group.image}
-                            alt={group.name}
-                            width="100%"
-                            height="100%"
-                          />
-                        </div>
-                      )}
-                      <div>
-                        <p className="dt-name">{group.name}</p>
-                        <p className="dt-type">{group.listings[0]?.categoryName || group.listings[0]?.listingType}</p>
-                      </div>
-                      <span
-                        className="dt-live"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "2px",
-                        }}
-                      >
-                        <FiberManualRecordIcon sx={{ fontSize: 10 }} /> LIVE
-                      </span>
-                    </div>
-                    <div className="dt-body">
-                      <p className="dt-label">
-                        {getGroupLabel(group)}
-                      </p>
-                      <div className="dt-footer">
-                        <span className="dt-active">Tap for details</span>
-                      </div>
-                    </div>
-                  </div>
-                </Tooltip>
-              </Marker>
+              />
             ))}
           </MarkerClusterGroup>
         </MapContainer>
