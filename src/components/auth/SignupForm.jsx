@@ -28,6 +28,19 @@ const INITIAL = {
   password: '',
 };
 
+const FieldLabel = ({ children }) => (
+  <Typography
+    sx={{
+      fontWeight: 600,
+      fontSize: 13,
+      color: 'text.secondary',
+      mb: 0.5,
+    }}
+  >
+    {children}
+  </Typography>
+);
+
 export default function SignupForm({ onSuccess, onSwitchToLogin }) {
   const [tab, setTab] = useState('signup');
   const [form, setForm] = useState(INITIAL);
@@ -85,7 +98,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
   };
 
   return (
-    <Box>
+    <Box sx={{maxWidth:"450px"}}>
       {/* Header */}
       <Typography
         variant="h4"
@@ -138,85 +151,93 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
       )}
 
       {/* Name */}
-      <TextField
-        label="Full Name"
-        placeholder="Enter Name"
-        value={form.name}
-        onChange={set('name')}
-        error={!!errors.name}
-        helperText={errors.name}
-        fullWidth
-        size="small"
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <PersonOutlineOutlinedIcon sx={{ fontSize: 15, color: '#dedede' }} />
-            </InputAdornment>
-          ),
-        }}
-        sx={{ ...fieldSx, mb: 3.5 }}
-      />
+      <Box sx={{ mb: 3.5 }}>
+        <FieldLabel>Full Name</FieldLabel>
+        <TextField
+          placeholder="Enter Name"
+          value={form.name}
+          onChange={set('name')}
+          error={!!errors.name}
+          helperText={errors.name}
+          fullWidth
+          size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PersonOutlineOutlinedIcon sx={{ fontSize: 15, color: '#dedede' }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={fieldSx}
+        />
+      </Box>
 
       {/* Email */}
-      <TextField
-        label="Email Address"
-        placeholder="john@example.com"
-        value={form.email}
-        onChange={set('email')}
-        error={!!errors.email}
-        helperText={errors.email}
-        fullWidth
-        size="small"
-        sx={{ ...fieldSx, mb: 3.5 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <EmailOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box sx={{ mb: 3.5 }}>
+        <FieldLabel>Email Address</FieldLabel>
+        <TextField
+          placeholder="john@example.com"
+          value={form.email}
+          onChange={set('email')}
+          error={!!errors.email}
+          helperText={errors.email}
+          fullWidth
+          size="small"
+          sx={fieldSx}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <EmailOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       {/* Phone */}
-      <TextField
-        label="Phone Number"
-        placeholder="+91 12345 67890"
-        value={form.phone}
-        onChange={set('phone')}
-        error={!!errors.phone}
-        helperText={errors.phone}
-        fullWidth
-        size="small"
-        sx={{ ...fieldSx, mb: 3.5 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <PhoneOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box sx={{ mb: 3.5 }}>
+        <FieldLabel>Phone Number</FieldLabel>
+        <TextField
+          placeholder="+91 12345 67890"
+          value={form.phone}
+          onChange={set('phone')}
+          error={!!errors.phone}
+          helperText={errors.phone}
+          fullWidth
+          size="small"
+          sx={fieldSx}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PhoneOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       {/* Password */}
-      <TextField
-        label="Password"
-        type="password"
-        placeholder="••••••••"
-        value={form.password}
-        onChange={set('password')}
-        error={!!errors.password}
-        helperText={errors.password}
-        fullWidth
-        size="small"
-        sx={{ ...fieldSx, mb: 3.5 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <LockOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box sx={{ mb: 3.5 }}>
+        <FieldLabel>Password</FieldLabel>
+        <TextField
+          type="password"
+          placeholder="••••••••"
+          value={form.password}
+          onChange={set('password')}
+          error={!!errors.password}
+          helperText={errors.password}
+          fullWidth
+          size="small"
+          sx={fieldSx}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LockOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       {/* CTA */}
       <Button
@@ -293,4 +314,3 @@ const fieldSx = {
     },
   },
 };
-

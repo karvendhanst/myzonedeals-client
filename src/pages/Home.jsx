@@ -22,14 +22,17 @@ import { useMapListings } from "../hooks/useListings";
 import MapSearch from "../components/MapSearch";
 import LocationModal from "../components/LocationModal";
 import { useMap } from "react-leaflet";
-import { Fab, Stack } from "@mui/material";
-import MapIcon from "@mui/icons-material/Map";
-import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
+import { useGetMapDeals } from "../hooks/useGetMapDeals";
 import MarkerClusterGroup from "react-leaflet-cluster";
 
 import L from "leaflet";
 
 const DRAWER_BLEEDING = 70;
+
+const toValidCoordinate = (value, min, max) => {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= min && number <= max ? number : null;
+};
 
 const createClusterCustomIcon = (cluster) => {
   const count = cluster.getChildCount();
@@ -57,18 +60,21 @@ const CenterUpdater = ({ center }) => {
 
 const Home = () => {
   const { data: listings = [] } = useMapListings();
+  const { data: mapDeals = [] } = useGetMapDeals();
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [open, setOpen] = useState(false);
-  const [mapType, setMapType] = useState("road");
-
   const [userLocation, setUserLocation] = useState(() => {
     const saved = localStorage.getItem("userLocation");
     return saved ? JSON.parse(saved) : null;
   });
 
   const defaultCenter = [10.967287, 78.061949];
-  const mapCenter = userLocation ? [userLocation.lat, userLocation.lon] : defaultCenter;
+  const userLat = toValidCoordinate(userLocation?.lat, -90, 90);
+  const userLon = toValidCoordinate(userLocation?.lon, -180, 180);
+  const mapCenter = userLat !== null && userLon !== null
+    ? [userLat, userLon]
+    : defaultCenter;
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -76,15 +82,52 @@ const Home = () => {
   const mapGroups = useMemo(() => {
     const groups = {};
     const seenCoords = {};
+    const mapItems = [
+      ...listings.map((listing) => ({
+        ...listing,
+        // The no-geo map response returns coordinates nested in location.
+        // Existing listing records store them as [latitude, longitude].
+        latitude: listing.latitude ?? listing.location?.coordinates?.[0],
+        longitude: listing.longitude ?? listing.location?.coordinates?.[1],
+        profilePicture: listing.profilePicture ?? listing.owner?.userId?.profilePicture,
+        ownerName: listing.ownerName ?? listing.owner?.userId?.name,
+      })),
+      ...mapDeals.map((deal) => ({
+        _id: deal._id,
+        listingType: "DEAL",
+        title: deal.title,
+        description: deal.description,
+        media: deal.images ?? [],
+        source: { type: "SHOP" },
+        shopId: deal.shopId,
+        shopName: deal.shopName,
+        shopImage: deal.shopImage,
+        categoryName: deal.category,
+        latitude: deal.latitude,
+        longitude: deal.longitude,
+        metadata: {
+          dealType: deal.dealType,
+          price: deal.price,
+          dealPrice: deal.dealPrice,
+          discountPercent: deal.discountPercent,
+          bogoDetails: deal.bogoDetails,
+          freebieDetails: deal.freebieDetails,
+        },
+      })),
+    ];
 
-    listings.forEach((listing) => {
+    mapItems.forEach((listing) => {
+      const lat = toValidCoordinate(listing.latitude, -90, 90);
+      const lng = toValidCoordinate(listing.longitude, -180, 180);
+
+      // Deal/shop records without coordinates cannot be rendered by Leaflet.
+      if (lat === null || lng === null) return;
+
       // Group by shopId if it's a shop, otherwise by coordinate
       const isShop = listing.source?.type === 'SHOP';
       const key = isShop && listing.shopId ? `shop_${listing.shopId}` : `coord_${listing.latitude}_${listing.longitude}`;
       
       if (!groups[key]) {
-        const lat = Number(listing.latitude);
-        const lng = Number(listing.longitude);
         const posKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
         const count = seenCoords[posKey] ?? 0;
         seenCoords[posKey] = count + 1;
@@ -106,7 +149,7 @@ const Home = () => {
       groups[key].listings.push(listing);
     });
     return Object.values(groups);
-  }, [listings]);
+  }, [listings, mapDeals]);
 
   const selectedListing = selectedGroup
     ? selectedGroup.listings[selectedIndex]
@@ -250,66 +293,8 @@ const Home = () => {
       <Box
         sx={{ flex: 1, position: "relative", height: "100%", width: "100%" }}
       >
-        {/* Map type toggle — rendered outside MapContainer so it is never clipped */}
-        <Stack
-          spacing={1}
-          sx={{
-            position: "absolute",
-            right: 16,
-            bottom: { xs: DRAWER_BLEEDING + 16, md: 24 },
-            zIndex: 1200,
-          }}
-        >
-          <Fab
-            size="small"
-            color={mapType === "road" ? "primary" : "default"}
-            onClick={() => setMapType("road")}
-          >
-            <MapIcon />
-          </Fab>
 
-          <Fab
-            size="small"
-            color={mapType === "satellite" ? "primary" : "default"}
-            onClick={() => setMapType("satellite")}
-          >
-            <SatelliteAltIcon />
-          </Fab>
-        </Stack>
-
-        <Box
-          sx={{
-            position: "absolute",
-            top: 12,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 700,
-            bgcolor: "rgba(15,23,42,0.85)",
-            backdropFilter: "blur(8px)",
-            color: "#fff",
-            fontSize: 12,
-            fontWeight: 700,
-            fontFamily: '"Plus Jakarta Sans", sans-serif',
-            px: 1.6,
-            py: 0.6,
-            borderRadius: "20px",
-            display: "flex",
-            alignItems: "center",
-            gap: 0.7,
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <Box
-            sx={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              bgcolor: "#4ade80",
-            }}
-          />
-          {mapGroups.length} location{mapGroups.length !== 1 ? "s" : ""}
-        </Box>
+      
 
         <MapContainer
           center={mapCenter}
@@ -320,17 +305,14 @@ const Home = () => {
           <CenterUpdater center={mapCenter} />
 
           <TileLayer
-            attribution={
-              mapType === "road"
-                ? "&copy; OpenStreetMap &copy; CARTO"
-                : "Tiles © Esri"
-            }
-            url={
-              mapType === "road"
-                ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            }
+            attribution="&copy; OpenStreetMap &copy; CARTO"
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           />
+
+          {/* <TileLayer
+  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+/> */}
 
           <MapSearch />
 

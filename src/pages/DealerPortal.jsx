@@ -101,9 +101,11 @@ export default function DealerPortal() {
           justifyContent: 'center',
           py: { xs: 4, md: 6 },
           px: { xs: 2.5, sm: 6, md: 4, lg: 8 },
+          width: {xs: "100%", md: "39%"},
+          mx: "auto"
         }}
       >
-        <Box sx={{ maxWidth: '440px', width: '100%' }}>
+        <Box sx={{width: '100%'}}>
           {step === STEPS.SIGNUP && (
             <SignupForm
               onSuccess={handleSignupSuccess}

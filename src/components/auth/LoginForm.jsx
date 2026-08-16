@@ -27,6 +27,19 @@ import { GoogleLogin } from '@react-oauth/google';
 
 const INITIAL = { email: '', password: '' };
 
+const FieldLabel = ({ children }) => (
+  <Typography
+    sx={{
+      fontWeight: 600,
+      fontSize: 13,
+      color: 'text.secondary',
+      mb: 0.5,
+    }}
+  >
+    {children}
+  </Typography>
+);
+
 export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
   const [tab, setTab] = useState('login');
   const [form, setForm] = useState(INITIAL);
@@ -147,59 +160,63 @@ export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
       )}
 
       {/* Email */}
-      <TextField
-        label="Email Address"
-        placeholder="contact@shopname.com"
-        type="email"
-        value={form.email}
-        onChange={set('email')}
-        error={!!errors.email}
-        helperText={errors.email}
-        fullWidth
-        size="small"
-        sx={{ ...fieldSx, mb: 3.5 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <EmailOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box sx={{ mb: 3.5 }}>
+        <FieldLabel>Email Address</FieldLabel>
+        <TextField
+          placeholder="contact@shopname.com"
+          type="email"
+          value={form.email}
+          onChange={set('email')}
+          error={!!errors.email}
+          helperText={errors.email}
+          fullWidth
+          size="small"
+          sx={fieldSx}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <EmailOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       {/* Password */}
-      <TextField
-        label="Password"
-        placeholder="Enter your password"
-        type={showPassword ? 'text' : 'password'}
-        value={form.password}
-        onChange={set('password')}
-        error={!!errors.password}
-        helperText={errors.password}
-        fullWidth
-        size="small"
-        sx={{ ...fieldSx, mb: 3.5 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <LockOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowPassword((v) => !v)}
-                edge="end"
-                size="small"
-              >
-                {showPassword
-                  ? <VisibilityOffOutlinedIcon sx={{ fontSize: 18 }} />
-                  : <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box sx={{ mb: 3.5 }}>
+        <FieldLabel>Password</FieldLabel>
+        <TextField
+          placeholder="Enter your password"
+          type={showPassword ? 'text' : 'password'}
+          value={form.password}
+          onChange={set('password')}
+          error={!!errors.password}
+          helperText={errors.password}
+          fullWidth
+          size="small"
+          sx={fieldSx}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LockOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword((v) => !v)}
+                  edge="end"
+                  size="small"
+                >
+                  {showPassword
+                    ? <VisibilityOffOutlinedIcon sx={{ fontSize: 18 }} />
+                    : <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       {/* Forgot password */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>

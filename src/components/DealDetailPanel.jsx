@@ -234,8 +234,8 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
           {/* Identity row */}
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
             <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", minWidth: 0 }}>
-              {isShop && deal.shopImage ? (
-                <Box component="img" src={deal.shopImage} alt={deal.shopName} sx={{ width: 48, height: 48, borderRadius: "14px", objectFit: "cover", border: "2px solid rgba(15,23,42,0.07)", flexShrink: 0, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+              {(isShop ? deal.shopImage : deal.profilePicture) ? (
+                <Box component="img" src={isShop ? deal.shopImage : deal.profilePicture} alt={isShop ? deal.shopName : "Individual listing owner"} sx={{ width: 48, height: 48, borderRadius: "14px", objectFit: "cover", border: "2px solid rgba(15,23,42,0.07)", flexShrink: 0, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
               ) : (
                 <Box sx={{ width: 48, height: 48, borderRadius: "14px", background: "linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, color: "#fff" }}>
                   {isShop ? <StorefrontIcon sx={{ fontSize: "inherit" }} /> : <AccountCircleIcon sx={{ fontSize: "inherit" }} />}
@@ -243,10 +243,10 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
               )}
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 15, color: "text.primary", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {isShop ? deal.shopName : "Individual Listing"}
+                  {isShop ? deal.shopName : deal.ownerName || "Individual Listing"}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 0.5, flexWrap: "wrap" }}>
-                  <Chip label={deal.categoryName || listingType} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', bgcolor: "rgba(15,23,42,0.07)", color: "#0F172A", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
+                  <Chip label={isShop ? (deal.categoryName || listingType) : "Individual Listing"} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', bgcolor: "rgba(15,23,42,0.07)", color: "#0F172A", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
                   {hasMultipleDeals && (
                     <Chip label={`${allDeals.length} listings`} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', bgcolor: "rgba(99,102,241,0.15)", color: "#4f46e5", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
                   )}

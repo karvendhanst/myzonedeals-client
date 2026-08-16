@@ -6,8 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useGetShopDeals } from '../hooks/useGetShopDeals';
 import { updateDeal } from '../api/dealApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
-
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography } from '@mui/material';
 // ─── Theme tokens (same as DealerDashboard) ──────────────────────────────────
 const T = {
   primaryMain:   '#0F172A',
@@ -204,6 +203,12 @@ const SkeletonCard = ({ index }) => (
       <div style={{ height: 14, width: '35%', borderRadius: 6, background: '#ebebeb', backgroundSize: '400px 100%', animation: 'shimmer 1.4s ease-in-out infinite', animationDelay: `${index * 0.07}s` }} />
     </div>
   </div>
+);
+
+const FieldLabel = ({ children }) => (
+  <Typography sx={{ fontFamily: T.font, fontWeight: 600, fontSize: 13, mb: 0.5, color: 'text.secondary' }}>
+    {children}
+  </Typography>
 );
 
 // ─── Deal row (desktop table) ────────────────────────────────────────────────
@@ -825,7 +830,7 @@ const ShopDealsPage = () => {
         </div>
 
         {/* Edit Deal Modal */}
-        <Dialog open={!!editingDeal} onClose={() => setEditingDeal(null)} maxWidth="sm" fullWidth>
+        {/* <Dialog open={!!editingDeal} onClose={() => setEditingDeal(null)} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ fontFamily: T.font, fontWeight: 700 }}>Edit Deal</DialogTitle>
           <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
             <TextField label="Title" value={editingDeal?.title || ''} onChange={e => setEditingDeal({...editingDeal, title: e.target.value})} fullWidth />
@@ -847,7 +852,90 @@ const ShopDealsPage = () => {
               {updating ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogActions>
-        </Dialog>
+        </Dialog> */}
+
+
+<Dialog open={!!editingDeal} onClose={() => setEditingDeal(null)} maxWidth="sm" fullWidth>
+  <DialogTitle sx={{ fontFamily: T.font, fontWeight: 700 }}>Edit Deal</DialogTitle>
+  <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
+
+    <div>
+      <FieldLabel>Title</FieldLabel>
+      <TextField
+        placeholder="Enter title"
+        value={editingDeal?.title || ''}
+        onChange={e => setEditingDeal({ ...editingDeal, title: e.target.value })}
+        fullWidth
+      />
+    </div>
+
+    <div>
+      <FieldLabel>Description</FieldLabel>
+      <TextField
+        placeholder="Enter description"
+        value={editingDeal?.description || ''}
+        onChange={e => setEditingDeal({ ...editingDeal, description: e.target.value })}
+        fullWidth
+        multiline
+        rows={3}
+      />
+    </div>
+
+    <div style={{ display: 'flex', gap: 16 }}>
+      <div style={{ flex: 1 }}>
+        <FieldLabel>Original Price</FieldLabel>
+        <TextField
+          type="number"
+          placeholder="0"
+          value={editingDeal?.price || ''}
+          onChange={e => setEditingDeal({ ...editingDeal, price: e.target.value })}
+          fullWidth
+        />
+      </div>
+      {editingDeal?.dealType === 'discount' && (
+        <div style={{ flex: 1 }}>
+          <FieldLabel>Deal Price</FieldLabel>
+          <TextField
+            type="number"
+            placeholder="0"
+            value={editingDeal?.dealPrice || ''}
+            onChange={e => setEditingDeal({ ...editingDeal, dealPrice: e.target.value })}
+            fullWidth
+          />
+        </div>
+      )}
+    </div>
+
+    <div style={{ display: 'flex', gap: 16 }}>
+      <div style={{ flex: 1 }}>
+        <FieldLabel>Valid From</FieldLabel>
+        <TextField
+          type="date"
+          value={editingDeal?.validFrom || ''}
+          onChange={e => setEditingDeal({ ...editingDeal, validFrom: e.target.value })}
+          fullWidth
+        />
+      </div>
+      <div style={{ flex: 1 }}>
+        <FieldLabel>Valid Till</FieldLabel>
+        <TextField
+          type="date"
+          value={editingDeal?.validTill || ''}
+          onChange={e => setEditingDeal({ ...editingDeal, validTill: e.target.value })}
+          fullWidth
+        />
+      </div>
+    </div>
+
+  </DialogContent>
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={() => setEditingDeal(null)} color="inherit">Cancel</Button>
+    <Button onClick={handleEditSave} variant="contained" disabled={updating} sx={{ bgcolor: T.primaryMain, color: 'white' }}>
+      {updating ? 'Saving...' : 'Save Changes'}
+    </Button>
+  </DialogActions>
+</Dialog>
+
       </div>
     </>
   );
