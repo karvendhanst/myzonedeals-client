@@ -38,11 +38,12 @@ const createClusterCustomIcon = (cluster) => {
   return L.divIcon({
     html: `
       <div class="custom-cluster">
-        ${count}
+        <span>${count}</span>
       </div>
     `,
     className: "",
-    iconSize: [56, 56],
+    iconSize: [46, 46],
+    iconAnchor: [23, 23],
   });
 };
 
@@ -320,14 +321,13 @@ const Home = () => {
             iconCreateFunction={createClusterCustomIcon}
             showCoverageOnHover={false}
             spiderLegPolylineOptions={{
-              weight: 2.5,
-              color: "#F4A261",
-              opacity: 0.75,
-              lineCap: "round",
-              lineJoin: "round",
+              // Keep spiderfy compact; the child pins provide enough context
+              // without leaving delayed connector lines during collapse.
+              weight: 0,
+              opacity: 0,
             }}
             zoomToBoundsOnClick={true}
-            animate={true}
+            animate={false}
             maxClusterRadius={60}
           >
             {mapGroups.map((group) => (
