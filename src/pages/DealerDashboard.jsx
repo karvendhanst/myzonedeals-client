@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useGetMyShops } from '../hooks/useGetMyShops';
 import { useNavigate } from 'react-router-dom';
 import { useTheme, useMediaQuery } from '@mui/material';
@@ -24,11 +24,9 @@ const T = {
   warning:       '#D97706',
   warningBg:     '#FEF3C7',
   error:         '#DC2626',
-  font:          '"Plus Jakarta Sans", sans-serif',
 };
 
 const globalStyles = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
 @keyframes pulse-dot {
   0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.45); }
@@ -76,7 +74,7 @@ const LiveClock = () => {
   return (
     <span
       style={{
-        fontFamily: T.font,
+        
         fontSize: "12px",
         fontWeight: 500,
         color: T.textSecondary,
@@ -186,7 +184,7 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily: T.font, fontWeight: 700, fontSize: '14px',
+             fontWeight: 700, fontSize: '14px',
             color: T.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {shop.name}
@@ -243,7 +241,7 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
       }}
     >
       {/* Index */}
-      <span style={{ fontFamily: T.font, fontWeight: 600, fontSize: '12px', color: T.textSecondary, opacity: 0.55 }}>
+      <span style={{  fontWeight: 600, fontSize: '12px', color: T.textSecondary, opacity: 0.55 }}>
         {String(index + 1).padStart(2, '0')}
       </span>
 
@@ -268,26 +266,26 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
         </div>
         <div style={{ overflow: 'hidden' }}>
           <div style={{
-            fontFamily: T.font, fontWeight: 700, fontSize: '14px',
+             fontWeight: 700, fontSize: '14px',
             color: hovered && shop.isVerified ? T.primaryMain : T.textPrimary,
             transition: 'color 0.12s',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {shop.name}
           </div>
-          <div style={{ fontFamily: T.font, fontWeight: 400, fontSize: '11px', color: T.textSecondary, marginTop: 1, opacity: 0.65 }}>
+          <div style={{  fontWeight: 400, fontSize: '11px', color: T.textSecondary, marginTop: 1, opacity: 0.65 }}>
             #{shop._id?.slice(-6)?.toUpperCase()}
           </div>
         </div>
       </div>
 
       {/* Category */}
-      <div style={{ fontFamily: T.font, fontWeight: 500, fontSize: '13px', color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div style={{  fontWeight: 500, fontSize: '13px', color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {shop.category || '—'}
       </div>
 
       {/* Location */}
-      <div style={{ fontFamily: T.font, fontWeight: 400, fontSize: '13px', color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{  fontWeight: 400, fontSize: '13px', color: T.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
         <LocationPinIcon style={{ fontSize: '11px' }} />
         {shop.address?.city || '—'}
       </div>
@@ -297,7 +295,7 @@ const ShopRow = ({ shop, index, navigate, onPendingClick, isMobile }) => {
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           padding: '3px 10px', borderRadius: 20,
-          fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+          fontSize: '11px', fontWeight: 700, 
           background: shop.isVerified ? T.successBg : T.warningBg,
           color: shop.isVerified ? T.success : T.warning,
         }}>
@@ -356,7 +354,7 @@ const DealerDashboard = () => {
   return (
     <>
       <style>{globalStyles}</style>
-      <div style={{ minHeight: '100vh', background: T.bgDefault, color: T.textPrimary, fontFamily: T.font }}>
+      <div style={{ minHeight: '100vh', background: T.bgDefault, color: T.textPrimary }}>
 
         {/* ── Top bar ── */}
         <div style={{
@@ -375,7 +373,7 @@ const DealerDashboard = () => {
               animation: 'pulse-dot 2.5s ease-in-out infinite',
             }} />
             <span style={{
-              fontFamily: T.font, fontWeight: 700, fontSize: '11px', color: T.textSecondary,
+               fontWeight: 700, fontSize: '11px', color: T.textSecondary,
               letterSpacing: '0.07em', textTransform: 'uppercase',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
@@ -392,7 +390,7 @@ const DealerDashboard = () => {
             onClick={() => navigate('/add-shop')}
             style={{
               background: T.primaryMain, border: 'none',
-              color: '#fff', fontFamily: T.font, fontWeight: 600,
+              color: '#fff',  fontWeight: 600,
               fontSize: '12px', padding: isSmall ? '8px 12px' : '9px 16px',
               borderRadius: '8px', cursor: 'pointer', transition: 'opacity 0.15s',
               flexShrink: 0, whiteSpace: 'nowrap',
@@ -409,7 +407,7 @@ const DealerDashboard = () => {
 
           {/* Page title */}
           <div style={{ marginBottom: isSmall ? 16 : 22, animation: 'fade-up 0.35s ease both' }}>
-            <h1 style={{ fontFamily: T.font, fontWeight: 800, fontSize: 'clamp(20px, 5vw, 30px)', margin: '0 0 4px', color: T.textPrimary, letterSpacing: '-0.02em' }}>
+            <h1 style={{  fontWeight: 800, fontSize: 'clamp(20px, 5vw, 30px)', margin: '0 0 4px', color: T.textPrimary, letterSpacing: '-0.02em' }}>
               Shop Operations
             </h1>
             <p style={{ margin: 0, fontSize: '13px', fontWeight: 400, color: T.textSecondary }}>
@@ -440,12 +438,12 @@ const DealerDashboard = () => {
                 flex: isMobile ? '1 1 0' : '0 0 auto',
               }}>
                 <div style={{
-                  fontFamily: T.font, fontWeight: 500, fontSize: isSmall ? '10px' : '11px',
+                   fontWeight: 500, fontSize: isSmall ? '10px' : '11px',
                   color: T.textSecondary, marginBottom: 4, whiteSpace: 'nowrap',
                 }}>
                   {s.label}
                 </div>
-                <div style={{ fontFamily: T.font, fontWeight: 800, fontSize: isSmall ? '18px' : '22px', color: s.accent, lineHeight: 1 }}>
+                <div style={{  fontWeight: 800, fontSize: isSmall ? '18px' : '22px', color: s.accent, lineHeight: 1 }}>
                   {isLoading ? '—' : s.value}
                 </div>
               </div>
@@ -473,7 +471,7 @@ const DealerDashboard = () => {
                   background: 'transparent', border: 'none',
                   borderBottom: filter === f.key ? `2px solid ${T.secondaryMain}` : '2px solid transparent',
                   color: filter === f.key ? T.textPrimary : T.textSecondary,
-                  fontFamily: T.font, fontWeight: filter === f.key ? 700 : 500,
+                   fontWeight: filter === f.key ? 700 : 500,
                   fontSize: '13px', padding: isSmall ? '8px 12px' : '9px 18px',
                   cursor: 'pointer', flexShrink: 0,
                   transition: 'all 0.13s', marginBottom: '-1px',
@@ -517,7 +515,7 @@ const DealerDashboard = () => {
               }}>
                 {['#', 'Shop', 'Category', 'Location', 'Status', ''].map((h, i) => (
                   <span key={i} style={{
-                    fontFamily: T.font, fontWeight: 600, fontSize: '11px',
+                     fontWeight: 600, fontSize: '11px',
                     color: T.textSecondary, letterSpacing: '0.04em',
                     textTransform: 'uppercase', textAlign: i === 5 ? 'right' : 'left',
                   }}>
@@ -533,7 +531,7 @@ const DealerDashboard = () => {
             )}
 
             {error && (
-              <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.font, fontSize: '13px', color: T.error, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <div style={{ padding: '40px 20px', textAlign: 'center',  fontSize: '13px', color: T.error, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <WarningIcon sx={{ fontSize: 16 }} /> Failed to load shops. Please try again later.
               </div>
             )}
@@ -546,17 +544,17 @@ const DealerDashboard = () => {
                   alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto 14px',
                 }}><StorefrontIcon sx={{ fontSize: 24, color: T.textSecondary }} /></div>
-                <div style={{ fontFamily: T.font, fontWeight: 600, fontSize: '14px', color: T.textPrimary, marginBottom: 6 }}>
+                <div style={{  fontWeight: 600, fontSize: '14px', color: T.textPrimary, marginBottom: 6 }}>
                   No shops yet
                 </div>
-                <div style={{ fontFamily: T.font, fontSize: '13px', color: T.textSecondary, marginBottom: 20 }}>
+                <div style={{  fontSize: '13px', color: T.textSecondary, marginBottom: 20 }}>
                   Register your first shop to start adding deals.
                 </div>
                 <button
                   onClick={() => navigate('/add-shop')}
                   style={{
                     background: T.primaryMain, border: 'none', color: '#fff',
-                    fontFamily: T.font, fontWeight: 600, fontSize: '13px',
+                     fontWeight: 600, fontSize: '13px',
                     padding: '9px 22px', borderRadius: '8px', cursor: 'pointer',
                   }}
                 >
@@ -577,7 +575,7 @@ const DealerDashboard = () => {
             ))}
 
             {!isLoading && shops.length > 0 && filtered.length === 0 && (
-              <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.font, fontSize: '13px', color: T.textSecondary }}>
+              <div style={{ padding: '40px 20px', textAlign: 'center',  fontSize: '13px', color: T.textSecondary }}>
                 No {filter} shops found.
               </div>
             )}
@@ -609,10 +607,10 @@ const DealerDashboard = () => {
           >
             <WarningIcon sx={{ fontSize: 18, color: T.warning, mt: '1px' }} />
             <div>
-              <div style={{ fontFamily: T.font, fontWeight: 700, fontSize: '12px', color: T.warning, marginBottom: 2 }}>
+              <div style={{  fontWeight: 700, fontSize: '12px', color: T.warning, marginBottom: 2 }}>
                 Shop not verified
               </div>
-              <div style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, lineHeight: 1.5 }}>
+              <div style={{  fontSize: '12px', color: T.textSecondary, lineHeight: 1.5 }}>
                 {toastMessage}
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+﻿import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Box, Typography, IconButton, Button, Chip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -120,14 +120,14 @@ const ImageCarousel = ({ images = [], discountPct, dealTypeBadge, hasMultipleDea
       </IconButton>
 
       {dealTypeBadge && (
-        <Box sx={{ position: "absolute", top: 12, left: 12, display: "flex", alignItems: "center", gap: 0.5, background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)", color: "#fff", fontSize: 11, fontWeight: 800, fontFamily: '"Plus Jakarta Sans", sans-serif', px: 1.3, py: 0.5, borderRadius: "8px", letterSpacing: "0.3px", boxShadow: "0 4px 14px rgba(244,162,97,0.45)" }}>
+        <Box sx={{ position: "absolute", top: 12, left: 12, display: "flex", alignItems: "center", gap: 0.5, background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)", color: "#fff", fontSize: 11, fontWeight: 800,  px: 1.3, py: 0.5, borderRadius: "8px", letterSpacing: "0.3px", boxShadow: "0 4px 14px rgba(244,162,97,0.45)" }}>
           <BoltIcon sx={{ fontSize: 12 }} />
           {discountPct > 0 ? `${discountPct}% OFF` : dealTypeBadge}
         </Box>
       )}
 
       <Box sx={{ position: "absolute", bottom: 12, left: 12, right: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, bgcolor: "rgba(15,23,42,0.65)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', px: 1.2, py: 0.45, borderRadius: "20px" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, bgcolor: "rgba(15,23,42,0.65)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700,  px: 1.2, py: 0.45, borderRadius: "20px" }}>
           <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#4ade80", animation: "dpPulse 1.8s ease-in-out infinite" }} />
           Live
         </Box>
@@ -139,7 +139,7 @@ const ImageCarousel = ({ images = [], discountPct, dealTypeBadge, hasMultipleDea
           </Box>
         )}
         {hasMultipleDeals && (
-          <Box sx={{ bgcolor: "rgba(15,23,42,0.65)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', px: 1.2, py: 0.45, borderRadius: "20px" }}>
+          <Box sx={{ bgcolor: "rgba(15,23,42,0.65)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700,  px: 1.2, py: 0.45, borderRadius: "20px" }}>
             {selectedIndex + 1} / {allDeals.length}
           </Box>
         )}
@@ -162,8 +162,8 @@ const ImageCarousel = ({ images = [], discountPct, dealTypeBadge, hasMultipleDea
 const EmptyState = () => (
   <Box sx={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, px: 4, bgcolor: "background.default", animation: "dpFadeIn 0.4s ease" }}>
     <Box sx={{ width: 80, height: 80, borderRadius: "24px", background: "linear-gradient(135deg, #0F172A 0%, #1e2d47 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, boxShadow: "0 12px 40px rgba(15,23,42,0.18)", color: "#fff" }}><LocalOfferIcon sx={{ fontSize: "inherit" }} /></Box>
-    <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 16, color: "text.primary", textAlign: "center" }}>No listing selected</Typography>
-    <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, color: "text.secondary", textAlign: "center", lineHeight: 1.6 }}>Tap a marker on the map to explore</Typography>
+    <Typography sx={{  fontWeight: 700, fontSize: 16, color: "text.primary", textAlign: "center" }}>No listing selected</Typography>
+    <Typography sx={{  fontSize: 13, color: "text.secondary", textAlign: "center", lineHeight: 1.6 }}>Tap a marker on the map to explore</Typography>
   </Box>
 );
 
@@ -184,8 +184,8 @@ const DealTabBar = ({ deals, selectedIndex, onSelect }) => (
   <Box sx={{ display: "flex", gap: 1, px: 2, py: 1.5, overflowX: "auto", borderBottom: "1px solid rgba(15,23,42,0.07)", bgcolor: "background.paper", flexShrink: 0, "&::-webkit-scrollbar": { height: 0 }, scrollbarWidth: "none" }}>
     {deals.map((deal, i) => (
       <Box key={deal._id} onClick={() => onSelect(i)} sx={{ flexShrink: 0, cursor: "pointer", px: 1.5, py: 0.8, borderRadius: "10px", border: "1.5px solid", borderColor: i === selectedIndex ? "#0F172A" : "rgba(15,23,42,0.12)", bgcolor: i === selectedIndex ? "#0F172A" : "transparent", transition: "all 0.18s ease" }}>
-        <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, fontWeight: 700, color: i === selectedIndex ? "#fff" : "text.secondary", whiteSpace: "nowrap", lineHeight: 1.3 }}>{deal.title}</Typography>
-        <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: i === selectedIndex ? "rgba(255,255,255,0.65)" : "#6366f1" }}>{getListingSubLabel(deal)}</Typography>
+        <Typography sx={{  fontSize: 11, fontWeight: 700, color: i === selectedIndex ? "#fff" : "text.secondary", whiteSpace: "nowrap", lineHeight: 1.3 }}>{deal.title}</Typography>
+        <Typography sx={{  fontSize: 10, fontWeight: 600, color: i === selectedIndex ? "rgba(255,255,255,0.65)" : "#6366f1" }}>{getListingSubLabel(deal)}</Typography>
       </Box>
     ))}
   </Box>
@@ -242,13 +242,13 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
                 </Box>
               )}
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 15, color: "text.primary", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <Typography sx={{  fontWeight: 700, fontSize: 15, color: "text.primary", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {isShop ? deal.shopName : deal.ownerName || "Individual Listing"}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 0.5, flexWrap: "wrap" }}>
-                  <Chip label={isShop ? (deal.categoryName || listingType) : "Individual Listing"} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', bgcolor: "rgba(15,23,42,0.07)", color: "#0F172A", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
+                  <Chip label={isShop ? (deal.categoryName || listingType) : "Individual Listing"} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700,  bgcolor: "rgba(15,23,42,0.07)", color: "#0F172A", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
                   {hasMultipleDeals && (
-                    <Chip label={`${allDeals.length} listings`} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, fontFamily: '"Plus Jakarta Sans", sans-serif', bgcolor: "rgba(99,102,241,0.15)", color: "#4f46e5", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
+                    <Chip label={`${allDeals.length} listings`} size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700,  bgcolor: "rgba(99,102,241,0.15)", color: "#4f46e5", borderRadius: "6px", "& .MuiChip-label": { px: 1 } }} />
                   )}
                 </Box>
               </Box>
@@ -259,10 +259,10 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
 
           {/* Info */}
           <Box>
-            <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 17, color: "text.primary", lineHeight: 1.35, mb: 0.8 }}>
+            <Typography sx={{  fontWeight: 700, fontSize: 17, color: "text.primary", lineHeight: 1.35, mb: 0.8 }}>
               {deal.title}
             </Typography>
-            <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, color: "text.secondary", lineHeight: 1.75 }}>
+            <Typography sx={{  fontSize: 13, color: "text.secondary", lineHeight: 1.75 }}>
               {deal.description}
             </Typography>
           </Box>
@@ -271,28 +271,28 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
           {listingType === 'DEAL' && meta.dealType === 'discount' && (
             <Box sx={{ borderRadius: "16px", p: "16px 18px", display: "flex", alignItems: "center", gap: 1.5, position: "relative", overflow: "hidden", bgcolor: "rgba(15,23,42,0.02)" }}>
               <Box>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px" }}>Deal Price</Typography>
+                <Typography sx={{  fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px" }}>Deal Price</Typography>
                 <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 28, lineHeight: 1 }}>₹{meta.dealPrice}</Typography>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', textDecoration: "line-through", fontSize: 14, lineHeight: 1 }}>₹{meta.price}</Typography>
+                  <Typography sx={{  fontWeight: 800, fontSize: 28, lineHeight: 1 }}>₹{meta.dealPrice}</Typography>
+                  <Typography sx={{  textDecoration: "line-through", fontSize: 14, lineHeight: 1 }}>₹{meta.price}</Typography>
                 </Box>
               </Box>
-              <Box sx={{ ml: "auto", background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)", color: "#fff", fontSize: 11, fontWeight: 800, fontFamily: '"Plus Jakarta Sans", sans-serif', px: 1.5, py: 0.8, borderRadius: "10px", whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(244,162,97,0.4)" }}>Save ₹{savings}</Box>
+              <Box sx={{ ml: "auto", background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)", color: "#fff", fontSize: 11, fontWeight: 800,  px: 1.5, py: 0.8, borderRadius: "10px", whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(244,162,97,0.4)" }}>Save ₹{savings}</Box>
             </Box>
           )}
 
           {listingType === 'DEAL' && meta.dealType === 'bogo' && (
             <Box sx={{ borderRadius: "16px", p: "16px 18px", bgcolor: "rgba(244,162,97,0.06)", border: "1px solid rgba(244,162,97,0.2)" }}>
-              <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 1, letterSpacing: "0.5px", color: "text.secondary" }}>Buy &amp; Get Offer</Typography>
+              <Typography sx={{  fontSize: 10, fontWeight: 600, mb: 1, letterSpacing: "0.5px", color: "text.secondary" }}>Buy &amp; Get Offer</Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, bgcolor: "#0F172A", borderRadius: "10px", px: 1.8, py: 1 }}>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 22, color: "#fff", lineHeight: 1 }}>{meta.bogoDetails?.buyQty ?? 1}</Typography>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.6)", lineHeight: 1.3 }}>items<br/>buy</Typography>
+                  <Typography sx={{  fontWeight: 800, fontSize: 22, color: "#fff", lineHeight: 1 }}>{meta.bogoDetails?.buyQty ?? 1}</Typography>
+                  <Typography sx={{  fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.6)", lineHeight: 1.3 }}>items<br/>buy</Typography>
                 </Box>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 16, fontWeight: 700, color: "#F4A261" }}>+</Typography>
+                <Typography sx={{  fontSize: 16, fontWeight: 700, color: "#F4A261" }}>+</Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, background: "linear-gradient(90deg, #F4A261 0%, #e8894a 100%)", borderRadius: "10px", px: 1.8, py: 1 }}>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 22, color: "#fff", lineHeight: 1 }}>{meta.bogoDetails?.getQty ?? 1}</Typography>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.3 }}>FREE<br/>items</Typography>
+                  <Typography sx={{  fontWeight: 800, fontSize: 22, color: "#fff", lineHeight: 1 }}>{meta.bogoDetails?.getQty ?? 1}</Typography>
+                  <Typography sx={{  fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.3 }}>FREE<br/>items</Typography>
                 </Box>
               </Box>
             </Box>
@@ -302,16 +302,16 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
             <Box sx={{ borderRadius: "16px", p: "16px 18px", bgcolor: "rgba(244,162,97,0.06)", border: "1px solid rgba(244,162,97,0.2)", display: "flex", alignItems: "center", gap: 1.5 }}>
               <Box sx={{ width: 48, height: 48, borderRadius: "14px", background: "linear-gradient(135deg, #F4A261 0%, #e8894a 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0, boxShadow: "0 4px 14px rgba(244,162,97,0.4)", color: "#fff" }}><CardGiftcardIcon sx={{ fontSize: "inherit" }} /></Box>
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, letterSpacing: "0.5px", color: "text.secondary", mb: 0.3 }}>Free Gift with purchase</Typography>
-                <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700, fontSize: 15, color: "text.primary", lineHeight: 1.3 }}>{meta.freebieDetails?.itemName ?? 'Free item included'}</Typography>
+                <Typography sx={{  fontSize: 10, fontWeight: 600, letterSpacing: "0.5px", color: "text.secondary", mb: 0.3 }}>Free Gift with purchase</Typography>
+                <Typography sx={{  fontWeight: 700, fontSize: 15, color: "text.primary", lineHeight: 1.3 }}>{meta.freebieDetails?.itemName ?? 'Free item included'}</Typography>
               </Box>
             </Box>
           )}
 
           {listingType !== 'DEAL' && meta.price != null && (
             <Box sx={{ borderRadius: "16px", p: "16px 18px", bgcolor: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)" }}>
-              <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px", color: "text.secondary" }}>Price</Typography>
-              <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, fontSize: 24, lineHeight: 1, color: "#4f46e5" }}>
+              <Typography sx={{  fontSize: 10, fontWeight: 600, mb: 0.2, letterSpacing: "0.5px", color: "text.secondary" }}>Price</Typography>
+              <Typography sx={{  fontWeight: 800, fontSize: 24, lineHeight: 1, color: "#4f46e5" }}>
                 ₹{meta.price} {meta.rentalPeriod && <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(15,23,42,0.6)" }}>/{meta.rentalPeriod}</span>}
               </Typography>
             </Box>
@@ -327,10 +327,10 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
                   <LocationOnIcon sx={{ fontSize: 15, color: "#0F172A" }} />
                 </Box>
                 <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 12, fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
+                  <Typography sx={{  fontSize: 12, fontWeight: 600, color: "text.primary", lineHeight: 1.3 }}>
                     {deal.address?.street || deal.address?.city}
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 11, color: "text.secondary" }}>
+                  <Typography sx={{  fontSize: 11, color: "text.secondary" }}>
                     {[deal.address?.city, deal.address?.state].filter(Boolean).join(", ")}
                   </Typography>
                 </Box>
@@ -339,11 +339,11 @@ const DealDetailPanel = ({ deal, allDeals, selectedIndex = 0, onSelectDeal, onCl
           </Box>
 
           {/* CTA Buttons */}
-          <Box sx={{ display: "flex", gap: 1.2, pb: 0.5 }}>
-            <Button fullWidth onClick={() => navigate(`/listings/${deal._id}`)}
-              sx={{ borderRadius: "12px", py: 1.4, textTransform: "none", fontWeight: 700, fontSize: 13, fontFamily: '"Plus Jakarta Sans", sans-serif', background: "linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%)", color: "#fff", boxShadow: "0 4px 18px rgba(15,23,42,0.28)", "&:hover": { background: "linear-gradient(135deg, #162032 0%, #243f6a 100%)", boxShadow: "0 6px 22px rgba(15,23,42,0.38)" }, transition: "all 0.2s ease" }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" ,gap: 1.2, pb: 0.5 }}>
+            {/* <Button fullWidth onClick={() => navigate(`/listings/${deal._id}`)}
+              sx={{ borderRadius: "12px", py: 1.4, textTransform: "none", fontWeight: 700, fontSize: 13,  background: "linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%)", color: "#fff", boxShadow: "0 4px 18px rgba(15,23,42,0.28)", "&:hover": { background: "linear-gradient(135deg, #162032 0%, #243f6a 100%)", boxShadow: "0 6px 22px rgba(15,23,42,0.38)" }, transition: "all 0.2s ease" }}>
               View Details
-            </Button>
+            </Button> */}
             <Button sx={{ minWidth: 48, borderRadius: "12px", py: 1.4, bgcolor: "rgba(15,23,42,0.04)", border: "1.5px solid rgba(15,23,42,0.15)" }} onClick={() => navigator.share?.({ title: deal.title, text: deal.description })}>
               <ShareIcon sx={{ color: "#0F172A", fontSize: 18 }} />
             </Button>

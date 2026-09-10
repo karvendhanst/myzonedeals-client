@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Container, Typography, Chip, Grid, Button,
@@ -100,7 +100,7 @@ export default function ListingDetailPage() {
         <Typography
           variant="h4"
           fontWeight={800}
-          sx={{ color: '#1a1a1a', fontFamily: '"Plus Jakarta Sans",sans-serif', mb: 1 }}
+          sx={{ color: '#1a1a1a', mb: 1 }}
         >
           {listing.title}
         </Typography>

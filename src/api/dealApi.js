@@ -51,7 +51,12 @@ export const fetchDealById = async (id) => {
 
 
 export const updateDeal = async (id, payload) => {
-  const { data } = await dealClient.patch(`/${id}`, payload);
+  const isFormData = payload instanceof FormData;
+  const { data } = await dealClient.patch(
+    `/${id}`,
+    payload,
+    isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
+  );
   return data;
 };
 

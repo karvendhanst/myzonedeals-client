@@ -26,6 +26,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import useAuthStore from "../store/authStore";
 import { useGetProfile } from "../hooks/useGetProfile";
+import mzdlogo from '../assets/images/mzdlogo.png'
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -65,21 +66,54 @@ const Navbar = () => {
         justifyContent: 'center',
         mb: 2,
       }}>
-        <Box sx={{
-          backgroundColor: "secondary.main",
-          width: 32,
-          height: 32,
-          borderRadius: 1.5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <LocalOfferIcon sx={{ color: "background.paper", fontSize: 18 }} />
-        </Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-          MyZoneDeals.
-        </Typography>
+
+
+                   <Box
+  component={Link}
+  to="/"
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    textDecoration: "none",
+    ml: "-20px"
+  }}
+>
+  <Box
+    component="img"
+    src={mzdlogo}
+    alt="MyZoneDeals"
+    sx={{
+      width: { xs: 40 },
+      height: "auto",
+      display: "block",
+    }}
+  />
+</Box>
+
+<Typography
+  sx={{
+fontFamily: '"Potta One", system-ui', 
+fontSize: "18px",
+    color: "#F4A261",
+    ml: "-10px"
+  }}
+>
+  MyZoneDeals
+</Typography>
+
+
+
+
+
+
+        
       </Box>
+
+
+
+
+
+
       <List sx={{ px: 2 }}>
         {/* Post Something — top of mobile drawer */}
         {(token && token !== "null") && (
@@ -93,7 +127,7 @@ const Navbar = () => {
               sx={{
                 justifyContent: "center",
                 py: 1.5,
-                borderRadius: '12px',
+                borderRadius: '6px',
                 textTransform: 'none',
                 fontWeight: 700,
                 backgroundColor: 'secondary.main',
@@ -120,7 +154,7 @@ const Navbar = () => {
               sx={{
                 justifyContent: "center",
                 py: 1.5,
-                borderRadius: '12px',
+                borderRadius: '6px',
                 textTransform: 'none',
                 fontWeight: 600,
                 backgroundColor: 'text.primary',
@@ -143,18 +177,26 @@ const Navbar = () => {
                 variant="outlined"
                 color="primary"
                 startIcon={
-                  profilePicture ? (
-                    <Avatar src={profilePicture} sx={{ width: 24, height: 24 }} />
-                  ) : (
-                    <AccountCircleIcon />
-                  )
+                  <Avatar
+                    src={profilePicture}
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      bgcolor: "#2563EB",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "white",
+                    }}
+                  >
+                    {profileResponse?.data?.name ? profileResponse.data.name.charAt(0).toUpperCase() : "U"}
+                  </Avatar>
                 }
                 fullWidth
                 sx={{
                   justifyContent: "flex-start",
                   py: 1.5,
                   px: 2,
-                  borderRadius: "12px",
+                  borderRadius: "6px",
                   textTransform: "none",
                   fontWeight: 600,
                 }}
@@ -173,7 +215,7 @@ const Navbar = () => {
     justifyContent: "flex-start",
     py: 1.5,
     px: 2,
-    borderRadius: "12px",
+    borderRadius: "6px",
     textTransform: "none",
     fontWeight: 600,
   }}
@@ -194,7 +236,7 @@ const Navbar = () => {
         elevation={0}
         sx={{
           backgroundColor: "background.paper",
-          padding: { xs: "4px 12px", md: "8px 24px" },
+          padding: { xs: "4px", md: "8px 10px" },
           borderBottom: "1px solid #eee",
         }}
       >
@@ -210,7 +252,8 @@ const Navbar = () => {
               textDecoration: "none",
             }}
           >
-            <Box
+
+            {/* <Box
               sx={{
                 backgroundColor: "secondary.main",
                 width: { xs: 32, md: 40 },
@@ -234,11 +277,47 @@ const Navbar = () => {
               }}
             >
               MyZoneDeals.
-            </Typography>
+            </Typography> */}
+
+
+            <Box
+  component={Link}
+  to="/"
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    textDecoration: "none",
+  }}
+>
+  <Box
+    component="img"
+    src={mzdlogo}
+    alt="MyZoneDeals"
+    sx={{
+      width: { xs: 40 },
+      height: "auto",
+      display: "block",
+    }}
+  />
+</Box>
+
+<Typography
+  sx={{
+fontFamily: '"Potta One", system-ui', 
+fontSize: "18px",
+    color: "#F4A261",
+    ml: "-10px"
+  }}
+>
+  MyZoneDeals
+</Typography>
+
+
+
           </Box>
 
           {/* Nav Links & Mobile Toggle */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 3 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 1.5 } }}>
             {!isMobile ? (
               <>
                 {/* Post Something — primary CTA (visible only when logged in) */}
@@ -252,8 +331,8 @@ const Navbar = () => {
                       backgroundColor: "secondary.main",
                       color: "#fff",
                       "& .MuiButton-startIcon": { color: "#fff" },
-                      borderRadius: "30px",
-                      padding: "8px 20px",
+                      borderRadius: "6px",
+                      padding: "8px 15px",
                       textTransform: "none",
                       fontWeight: 700,
                       boxShadow: "0 4px 14px rgba(244, 162, 97, 0.24)",
@@ -271,7 +350,7 @@ const Navbar = () => {
                   startIcon={isOwnerDashboard ? <AddBusinessIcon /> : <StorefrontIcon />}
                   sx={{
                     backgroundColor: "text.primary",
-                    borderRadius: "30px",
+                    borderRadius: "6px",
                     padding: "8px 20px",
                     textTransform: "none",
                     fontWeight: 600,
@@ -288,7 +367,7 @@ const Navbar = () => {
                       startIcon={<LogoutIcon />}
                       onClick={handleLogout}
                       sx={{
-                        borderRadius: "30px",
+                        borderRadius: "6px",
                         padding: "8px 20px",
                         textTransform: "none",
                         fontWeight: 600,
@@ -300,16 +379,20 @@ const Navbar = () => {
                       component={Link}
                       to="/dealer-profile"
                       color="primary"
-                      sx={{
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
                     >
-                      {profilePicture ? (
-                        <Avatar src={profilePicture} sx={{ width: 32, height: 32 }} />
-                      ) : (
-                        <AccountCircleIcon sx={{ fontSize: 32 }} />
-                      )}
+                      <Avatar
+                        src={profilePicture}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: "#2563EB",
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: "white",
+                        }}
+                      >
+                        {profileResponse?.data?.name ? profileResponse.data.name.charAt(0).toUpperCase() : "U"}
+                      </Avatar>
                     </IconButton>
                   </>
                 )}

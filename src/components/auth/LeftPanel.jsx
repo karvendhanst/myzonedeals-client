@@ -63,7 +63,6 @@ export default function LeftPanel() {
             fontSize: { md: '2.6rem', lg: '3rem' },
             lineHeight: 1.2,
             mb: 2,
-            fontFamily: "'DM Serif Display', serif"
           }}
         >
           Grow your local<br />presence effortlessly.

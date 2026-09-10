@@ -4,9 +4,11 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetShopDeals } from '../hooks/useGetShopDeals';
-import { updateDeal } from '../api/dealApi';
+import { updateDeal, deleteDeal } from '../api/dealApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography, Box, IconButton } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 // ─── Theme tokens (same as DealerDashboard) ──────────────────────────────────
 const T = {
   primaryMain:   '#0F172A',
@@ -22,12 +24,10 @@ const T = {
   warning:       '#D97706',
   warningBg:     '#FEF3C7',
   error:         '#DC2626',
-  font:          '"Plus Jakarta Sans", sans-serif',
 };
 
 
 const globalStyles = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
 @keyframes slide-in {
   from { opacity: 0; transform: translateX(-6px); }
@@ -153,7 +153,7 @@ const ThumbStrip = ({ images, size = 44 }) => {
               borderRadius: 8,
             }}>
               <span style={{
-                fontFamily: T.font, fontWeight: 700, fontSize: '11px', color: '#fff',
+                 fontWeight: 700, fontSize: '11px', color: '#fff',
               }}>+{extra}</span>
             </div>
           )}
@@ -206,13 +206,13 @@ const SkeletonCard = ({ index }) => (
 );
 
 const FieldLabel = ({ children }) => (
-  <Typography sx={{ fontFamily: T.font, fontWeight: 600, fontSize: 13, mb: 0.5, color: 'text.secondary' }}>
+  <Typography sx={{  fontWeight: 600, fontSize: 13, mb: 0.5, color: 'text.secondary' }}>
     {children}
   </Typography>
 );
 
 // ─── Deal row (desktop table) ────────────────────────────────────────────────
-const DealRow = ({ deal, index, onEdit }) => {
+const DealRow = ({ deal, index, onEdit, onDelete }) => {
   const [hovered, setHovered] = useState(false);
   const hasDiscount = deal.discountPercent > 0;
   const saving = deal.price && deal.dealPrice
@@ -236,7 +236,7 @@ const DealRow = ({ deal, index, onEdit }) => {
     >
       {/* Index */}
       <span style={{
-        fontFamily: T.font, fontWeight: 600, fontSize: '12px',
+         fontWeight: 600, fontSize: '12px',
         color: T.textSecondary, opacity: 0.5,
       }}>
         {String(index + 1).padStart(2, '0')}
@@ -248,7 +248,7 @@ const DealRow = ({ deal, index, onEdit }) => {
       {/* Title + description */}
       <div style={{ overflow: 'hidden', minWidth: 0 }}>
         <div style={{
-          fontFamily: T.font, fontWeight: 700, fontSize: '14px',
+           fontWeight: 700, fontSize: '14px',
           color: hovered ? T.primaryMain : T.textPrimary,
           transition: 'color 0.12s',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -257,7 +257,7 @@ const DealRow = ({ deal, index, onEdit }) => {
         </div>
         {deal.description && (
           <div className="sd-deal-desc" style={{
-            fontFamily: T.font, fontWeight: 400, fontSize: '12px',
+             fontWeight: 400, fontSize: '12px',
             color: T.textSecondary, marginTop: 2,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             maxWidth: '95%',
@@ -272,14 +272,14 @@ const DealRow = ({ deal, index, onEdit }) => {
         {deal.dealType === 'discount' && deal.dealPrice ? (
           <>
             <div style={{
-              fontFamily: T.font, fontWeight: 800, fontSize: '15px',
+               fontWeight: 800, fontSize: '15px',
               color: T.textPrimary, letterSpacing: '-0.3px',
             }}>
               ₹{deal.dealPrice}
             </div>
             {deal.price && (
               <div style={{
-                fontFamily: T.font, fontWeight: 400, fontSize: '11px',
+                 fontWeight: 400, fontSize: '11px',
                 color: T.textSecondary, textDecoration: 'line-through', marginTop: 1,
               }}>
                 ₹{deal.price}
@@ -288,7 +288,7 @@ const DealRow = ({ deal, index, onEdit }) => {
           </>
         ) : (
           <div style={{
-            fontFamily: T.font, fontWeight: 800, fontSize: '15px',
+             fontWeight: 800, fontSize: '15px',
             color: T.textPrimary, letterSpacing: '-0.3px',
           }}>
             {deal.price ? `₹${deal.price}` : 'Free'}
@@ -302,7 +302,7 @@ const DealRow = ({ deal, index, onEdit }) => {
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '3px 9px', borderRadius: 20,
-            fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+            fontSize: '11px', fontWeight: 700, 
             background: T.successBg, color: T.success,
             whiteSpace: 'nowrap',
           }}>
@@ -312,7 +312,7 @@ const DealRow = ({ deal, index, onEdit }) => {
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '3px 9px', borderRadius: 20,
-            fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+            fontSize: '11px', fontWeight: 700, 
             background: T.warningBg, color: T.warning,
             whiteSpace: 'nowrap',
           }}>
@@ -322,14 +322,14 @@ const DealRow = ({ deal, index, onEdit }) => {
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '3px 9px', borderRadius: 20,
-            fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+            fontSize: '11px', fontWeight: 700, 
             background: '#E0E7FF', color: '#4338CA',
             whiteSpace: 'nowrap',
           }}>
             <LocalOfferIcon sx={{ fontSize: 12 }} /> FREEBIE
           </span>
         ) : (
-          <span style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, opacity: 0.4 }}>—</span>
+          <span style={{  fontSize: '12px', color: T.textSecondary, opacity: 0.4 }}>—</span>
         )}
       </div>
 
@@ -337,13 +337,13 @@ const DealRow = ({ deal, index, onEdit }) => {
       <div className="sd-col-savings" style={{ minWidth: 0 }}>
         {deal.dealType === 'discount' && saving !== null && saving > 0 ? (
           <div style={{
-            fontFamily: T.font, fontWeight: 600, fontSize: '13px', color: T.success,
+             fontWeight: 600, fontSize: '13px', color: T.success,
             whiteSpace: 'nowrap',
           }}>
             ₹{saving} saved
           </div>
         ) : (
-          <span style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, opacity: 0.4 }}>—</span>
+          <span style={{  fontSize: '12px', color: T.textSecondary, opacity: 0.4 }}>—</span>
         )}
       </div>
 
@@ -353,10 +353,19 @@ const DealRow = ({ deal, index, onEdit }) => {
           onClick={(e) => { e.stopPropagation(); onEdit(deal); }}
           style={{
             cursor: 'pointer', background: 'transparent', border: '1px solid #E5E7EB', borderRadius: 6,
-            color: T.textSecondary, fontSize: '12px', padding: '4px 8px', fontFamily: T.font, fontWeight: 600
+            color: T.textSecondary, fontSize: '12px', padding: '4px 8px',  fontWeight: 600
           }}
         >
           Edit
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(deal); }}
+          style={{
+            cursor: 'pointer', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 6,
+            color: T.error, fontSize: '12px', padding: '4px 8px',  fontWeight: 600
+          }}
+        >
+          Delete
         </button>
       </div>
     </div>
@@ -364,7 +373,7 @@ const DealRow = ({ deal, index, onEdit }) => {
 };
 
 // ─── Deal card (mobile) ──────────────────────────────────────────────────────
-const DealCard = ({ deal, index, onEdit }) => {
+const DealCard = ({ deal, index, onEdit, onDelete }) => {
   const hasDiscount = deal.discountPercent > 0;
   const saving = deal.price && deal.dealPrice
     ? deal.price - deal.dealPrice
@@ -391,7 +400,7 @@ const DealCard = ({ deal, index, onEdit }) => {
         }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{
-              fontFamily: T.font, fontWeight: 700, fontSize: '14px',
+               fontWeight: 700, fontSize: '14px',
               color: T.textPrimary,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
@@ -399,7 +408,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             </div>
             {deal.description && (
               <div style={{
-                fontFamily: T.font, fontWeight: 400, fontSize: '12px',
+                 fontWeight: 400, fontSize: '12px',
                 color: T.textSecondary, marginTop: 2,
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
@@ -411,7 +420,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             )}
           </div>
           <span style={{
-            fontFamily: T.font, fontWeight: 600, fontSize: '11px',
+             fontWeight: 600, fontSize: '11px',
             color: T.textSecondary, opacity: 0.5, flexShrink: 0, marginTop: 1,
           }}>
             {String(index + 1).padStart(2, '0')}
@@ -425,14 +434,14 @@ const DealCard = ({ deal, index, onEdit }) => {
           {deal.dealType === 'discount' && deal.dealPrice ? (
             <>
               <span style={{
-                fontFamily: T.font, fontWeight: 800, fontSize: '16px',
+                 fontWeight: 800, fontSize: '16px',
                 color: T.textPrimary, letterSpacing: '-0.3px',
               }}>
                 ₹{deal.dealPrice}
               </span>
               {deal.price && (
                 <span style={{
-                  fontFamily: T.font, fontWeight: 400, fontSize: '12px',
+                   fontWeight: 400, fontSize: '12px',
                   color: T.textSecondary, textDecoration: 'line-through',
                 }}>
                   ₹{deal.price}
@@ -441,7 +450,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             </>
           ) : (
             <span style={{
-              fontFamily: T.font, fontWeight: 800, fontSize: '16px',
+               fontWeight: 800, fontSize: '16px',
               color: T.textPrimary, letterSpacing: '-0.3px',
             }}>
               {deal.price ? `₹${deal.price}` : 'Free'}
@@ -457,7 +466,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '3px 9px', borderRadius: 20,
-              fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+              fontSize: '11px', fontWeight: 700, 
               background: T.successBg, color: T.success,
             }}>
               <LocalOfferIcon sx={{ fontSize: 12 }} /> {deal.discountPercent}% OFF
@@ -466,7 +475,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '3px 9px', borderRadius: 20,
-              fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+              fontSize: '11px', fontWeight: 700, 
               background: T.warningBg, color: T.warning,
             }}>
               <LocalOfferIcon sx={{ fontSize: 12 }} /> BOGO
@@ -475,7 +484,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '3px 9px', borderRadius: 20,
-              fontSize: '11px', fontWeight: 700, fontFamily: T.font,
+              fontSize: '11px', fontWeight: 700, 
               background: '#E0E7FF', color: '#4338CA',
             }}>
               <LocalOfferIcon sx={{ fontSize: 12 }} /> FREEBIE
@@ -483,14 +492,14 @@ const DealCard = ({ deal, index, onEdit }) => {
           )}
           {deal.dealType === 'discount' && saving !== null && saving > 0 && (
             <span style={{
-              fontFamily: T.font, fontWeight: 600, fontSize: '12px', color: T.success,
+               fontWeight: 600, fontSize: '12px', color: T.success,
             }}>
               ₹{saving} saved
             </span>
           )}
           {photoCount > 0 ? (
             <span style={{
-              fontFamily: T.font, fontWeight: 500, fontSize: '11px',
+               fontWeight: 500, fontSize: '11px',
               color: T.textSecondary,
               background: T.bgDefault,
               border: `1px solid ${T.border}`,
@@ -501,7 +510,7 @@ const DealCard = ({ deal, index, onEdit }) => {
             </span>
           ) : (
             <span style={{
-              fontFamily: T.font, fontSize: '11px', color: T.textSecondary, opacity: 0.35,
+               fontSize: '11px', color: T.textSecondary, opacity: 0.35,
               marginLeft: 'auto',
             }}>
               No photos
@@ -511,11 +520,21 @@ const DealCard = ({ deal, index, onEdit }) => {
             onClick={() => onEdit(deal)}
             style={{
               cursor: 'pointer', background: T.bgDefault, border: 'none', borderRadius: 6,
-              color: T.textPrimary, fontSize: '12px', padding: '4px 12px', fontFamily: T.font, fontWeight: 600,
+              color: T.textPrimary, fontSize: '12px', padding: '4px 12px',  fontWeight: 600,
               marginLeft: 8
             }}
           >
             Edit
+          </button>
+          <button
+            onClick={() => onDelete(deal)}
+            style={{
+              cursor: 'pointer', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 6,
+              color: T.error, fontSize: '12px', padding: '4px 12px',  fontWeight: 600,
+              marginLeft: 6
+            }}
+          >
+            Delete
           </button>
         </div>
       </div>
@@ -533,6 +552,7 @@ const ShopDealsPage = () => {
 
   const [filter, setFilter] = useState('all');
   const [editingDeal, setEditingDeal] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const { mutate: doUpdateDeal, isPending: updating } = useMutation({
     mutationFn: (data) => updateDeal(data._id, data.payload),
@@ -542,17 +562,37 @@ const ShopDealsPage = () => {
     }
   });
 
+  const { mutate: doDeleteDeal, isPending: deleting } = useMutation({
+    mutationFn: (id) => deleteDeal(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopDeals', shopId] });
+      setPendingDelete(null);
+    }
+  });
+
   const handleEditSave = () => {
+    if (!editingDeal) return;
+
+    const formData = new FormData();
+    formData.append('title', editingDeal.title || '');
+    formData.append('description', editingDeal.description || '');
+    formData.append('price', editingDeal.price || '');
+    if (editingDeal.dealType === 'discount') {
+      formData.append('dealPrice', editingDeal.dealPrice || '');
+    }
+    if (editingDeal.validFrom) formData.append('validFrom', editingDeal.validFrom);
+    if (editingDeal.validTill) formData.append('validTill', editingDeal.validTill);
+    formData.append('existingImages', JSON.stringify(editingDeal.existingImages || []));
+
+    if (editingDeal.newImages && editingDeal.newImages.length > 0) {
+      editingDeal.newImages.forEach(item => {
+        formData.append('images', item.file);
+      });
+    }
+
     doUpdateDeal({
       _id: editingDeal._id,
-      payload: {
-        title: editingDeal.title,
-        description: editingDeal.description,
-        price: editingDeal.price,
-        dealPrice: editingDeal.dealPrice,
-        validFrom: editingDeal.validFrom,
-        validTill: editingDeal.validTill,
-      }
+      payload: formData
     });
   };
 
@@ -578,7 +618,7 @@ const ShopDealsPage = () => {
     return (
       <>
         <style>{globalStyles}</style>
-        <div style={{ minHeight: '100vh', background: T.bgDefault, fontFamily: T.font }}>
+        <div style={{ minHeight: '100vh', background: T.bgDefault }}>
           {/* Top bar skeleton */}
           <div className="sd-topbar" style={{
             height: 52, background: T.bgWhite,
@@ -619,7 +659,7 @@ const ShopDealsPage = () => {
   return (
     <>
       <style>{globalStyles}</style>
-      <div style={{ minHeight: '100vh', background: T.bgDefault, fontFamily: T.font }}>
+      <div style={{ minHeight: '100vh', background: T.bgDefault }}>
 
         {/* ── Top bar ── */}
         <div className="sd-topbar" style={{
@@ -649,12 +689,12 @@ const ShopDealsPage = () => {
             >
               <ArrowBackIcon sx={{ fontSize: 16 }} />
             </button>
-            <span className="sd-breadcrumb-portal" style={{ fontFamily: T.font, fontSize: '12px', color: T.textSecondary, whiteSpace: 'nowrap' }}>
+            <span className="sd-breadcrumb-portal" style={{  fontSize: '12px', color: T.textSecondary, whiteSpace: 'nowrap' }}>
               Dealer Portal
             </span>
             <span className="sd-breadcrumb-portal" style={{ color: T.border, fontSize: 12 }}>/</span>
             <span style={{
-              fontFamily: T.font, fontWeight: 700, fontSize: '12px', color: T.textPrimary,
+               fontWeight: 700, fontSize: '12px', color: T.textPrimary,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               Shop Deals
@@ -666,7 +706,7 @@ const ShopDealsPage = () => {
             onClick={() => navigate(`/shop/${shopId}/add-deals`)}
             style={{
               background: T.primaryMain, border: 'none',
-              color: '#fff', fontFamily: T.font, fontWeight: 600,
+              color: '#fff',  fontWeight: 600,
               fontSize: '12px', padding: '7px 16px', borderRadius: '8px',
               cursor: 'pointer', transition: 'opacity 0.15s',
               display: 'flex', alignItems: 'center', gap: 6,
@@ -686,7 +726,7 @@ const ShopDealsPage = () => {
           {/* Page title */}
           <div style={{ marginBottom: 22, animation: 'fade-up 0.35s ease both' }}>
             <h1 style={{
-              fontFamily: T.font, fontWeight: 800,
+               fontWeight: 800,
               fontSize: 'clamp(20px, 5vw, 30px)',
               margin: '0 0 4px', color: T.textPrimary, letterSpacing: '-0.02em',
             }}>
@@ -713,10 +753,10 @@ const ShopDealsPage = () => {
                 padding: '12px 24px', background: T.bgWhite,
                 borderRight: i < 2 ? `1px solid ${T.border}` : 'none',
               }}>
-                <div style={{ fontFamily: T.font, fontWeight: 500, fontSize: '11px', color: T.textSecondary, marginBottom: 4, whiteSpace: 'nowrap' }}>
+                <div style={{  fontWeight: 500, fontSize: '11px', color: T.textSecondary, marginBottom: 4, whiteSpace: 'nowrap' }}>
                   {s.label}
                 </div>
-                <div style={{ fontFamily: T.font, fontWeight: 800, fontSize: '22px', color: s.accent, lineHeight: 1 }}>
+                <div style={{  fontWeight: 800, fontSize: '22px', color: s.accent, lineHeight: 1 }}>
                   {s.value}
                 </div>
               </div>
@@ -740,7 +780,7 @@ const ShopDealsPage = () => {
                   background: 'transparent', border: 'none',
                   borderBottom: filter === f.key ? `2px solid ${T.secondaryMain}` : '2px solid transparent',
                   color: filter === f.key ? T.textPrimary : T.textSecondary,
-                  fontFamily: T.font, fontWeight: filter === f.key ? 700 : 500,
+                   fontWeight: filter === f.key ? 700 : 500,
                   fontSize: '13px', padding: '9px 18px', cursor: 'pointer',
                   transition: 'all 0.13s', marginBottom: '-1px',
                   display: 'flex', alignItems: 'center', gap: 6,
@@ -784,7 +824,7 @@ const ShopDealsPage = () => {
                   const extraClass = i === 4 ? 'sd-col-discount' : i === 5 ? 'sd-col-savings' : '';
                   return (
                     <span key={i} className={extraClass} style={{
-                      fontFamily: T.font, fontWeight: 600, fontSize: '11px',
+                       fontWeight: 600, fontSize: '11px',
                       color: T.textSecondary, letterSpacing: '0.04em',
                       textTransform: 'uppercase',
                       textAlign: i === 6 ? 'right' : 'left',
@@ -796,13 +836,13 @@ const ShopDealsPage = () => {
               </div>
 
               {filtered.map((deal, i) => (
-                <DealRow key={deal._id} deal={deal} index={i} onEdit={(d) => setEditingDeal({...d, validFrom: d.validFrom?.split('T')[0] || '', validTill: d.validTill?.split('T')[0] || ''})} />
+                <DealRow key={deal._id} deal={deal} index={i} onEdit={(d) => setEditingDeal({...d, validFrom: d.validFrom?.split('T')[0] || '', validTill: d.validTill?.split('T')[0] || '', existingImages: d.images ? d.images.map(img => ({ ...img })) : [], newImages: []})} onDelete={(d) => setPendingDelete(d)} />
               ))}
 
               {filtered.length === 0 && (
                 <div style={{
                   padding: '48px 20px', textAlign: 'center',
-                  fontFamily: T.font, fontSize: '13px', color: T.textSecondary,
+                   fontSize: '13px', color: T.textSecondary,
                   animation: 'fade-up 0.3s ease both',
                 }}>
                   No {filter === 'discounted' ? 'discounted' : 'full-price'} deals found.
@@ -813,13 +853,13 @@ const ShopDealsPage = () => {
             {/* Mobile cards */}
             <div className="sd-mobile-cards">
               {filtered.map((deal, i) => (
-                <DealCard key={deal._id} deal={deal} index={i} onEdit={(d) => setEditingDeal({...d, validFrom: d.validFrom?.split('T')[0] || '', validTill: d.validTill?.split('T')[0] || ''})} />
+                <DealCard key={deal._id} deal={deal} index={i} onEdit={(d) => setEditingDeal({...d, validFrom: d.validFrom?.split('T')[0] || '', validTill: d.validTill?.split('T')[0] || '', existingImages: d.images ? d.images.map(img => ({ ...img })) : [], newImages: []})} onDelete={(d) => setPendingDelete(d)} />
               ))}
 
               {filtered.length === 0 && (
                 <div style={{
                   padding: '40px 16px', textAlign: 'center',
-                  fontFamily: T.font, fontSize: '13px', color: T.textSecondary,
+                   fontSize: '13px', color: T.textSecondary,
                   animation: 'fade-up 0.3s ease both',
                 }}>
                   No {filter === 'discounted' ? 'discounted' : 'full-price'} deals found.
@@ -831,7 +871,7 @@ const ShopDealsPage = () => {
 
         {/* Edit Deal Modal */}
         {/* <Dialog open={!!editingDeal} onClose={() => setEditingDeal(null)} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ fontFamily: T.font, fontWeight: 700 }}>Edit Deal</DialogTitle>
+          <DialogTitle sx={{  fontWeight: 700 }}>Edit Deal</DialogTitle>
           <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
             <TextField label="Title" value={editingDeal?.title || ''} onChange={e => setEditingDeal({...editingDeal, title: e.target.value})} fullWidth />
             <TextField label="Description" value={editingDeal?.description || ''} onChange={e => setEditingDeal({...editingDeal, description: e.target.value})} fullWidth multiline rows={3} />
@@ -856,7 +896,7 @@ const ShopDealsPage = () => {
 
 
 <Dialog open={!!editingDeal} onClose={() => setEditingDeal(null)} maxWidth="sm" fullWidth>
-  <DialogTitle sx={{ fontFamily: T.font, fontWeight: 700 }}>Edit Deal</DialogTitle>
+  <DialogTitle sx={{  fontWeight: 700 }}>Edit Deal</DialogTitle>
   <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
 
     <div>
@@ -927,11 +967,202 @@ const ShopDealsPage = () => {
       </div>
     </div>
 
+    <div>
+      <FieldLabel>Deal Images ({((editingDeal?.existingImages?.length || 0) + (editingDeal?.newImages?.length || 0))}/10)</FieldLabel>
+
+      {((editingDeal?.existingImages?.length || 0) > 0 || (editingDeal?.newImages?.length || 0) > 0) && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 1.5, mt: 0.5 }}>
+          {/* Existing Images */}
+          {editingDeal?.existingImages?.map((img, idx) => (
+            <Box
+              key={`existing-${idx}`}
+              sx={{
+                position: 'relative',
+                width: 72,
+                height: 72,
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: img.isCover ? `2px solid ${T.secondaryMain}` : `1px solid ${T.border}`,
+                flexShrink: 0,
+                '&:hover .del-btn': { opacity: 1 },
+              }}
+            >
+              <img src={img.url} alt="deal" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {img.isCover && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    bgcolor: T.secondaryMain,
+                    color: '#fff',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    py: '1px',
+                  }}
+                >
+                  COVER
+                </Box>
+              )}
+              <IconButton
+                className="del-btn"
+                size="small"
+                onClick={() => {
+                  const updated = editingDeal.existingImages.filter((_, i) => i !== idx);
+                  if (img.isCover && updated.length > 0) updated[0].isCover = true;
+                  setEditingDeal({ ...editingDeal, existingImages: updated });
+                }}
+                sx={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 2,
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  opacity: 0,
+                  transition: 'opacity 0.15s',
+                  width: 22,
+                  height: 22,
+                  p: 0,
+                  '&:hover': { bgcolor: '#fff' },
+                }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: 14, color: T.error }} />
+              </IconButton>
+            </Box>
+          ))}
+
+          {/* New Images */}
+          {editingDeal?.newImages?.map((img, idx) => (
+            <Box
+              key={`new-${idx}`}
+              sx={{
+                position: 'relative',
+                width: 72,
+                height: 72,
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: `2px dashed ${T.secondaryMain}`,
+                flexShrink: 0,
+                '&:hover .del-btn': { opacity: 1 },
+              }}
+            >
+              <img src={img.url} alt="new deal" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  bgcolor: T.success,
+                  color: '#fff',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  py: '1px',
+                }}
+              >
+                NEW
+              </Box>
+              <IconButton
+                className="del-btn"
+                size="small"
+                onClick={() => {
+                  const updated = editingDeal.newImages.filter((_, i) => i !== idx);
+                  setEditingDeal({ ...editingDeal, newImages: updated });
+                }}
+                sx={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 2,
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  opacity: 0,
+                  transition: 'opacity 0.15s',
+                  width: 22,
+                  height: 22,
+                  p: 0,
+                  '&:hover': { bgcolor: '#fff' },
+                }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: 14, color: T.error }} />
+              </IconButton>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {((editingDeal?.existingImages?.length || 0) + (editingDeal?.newImages?.length || 0)) < 10 && (
+        <Box
+          component="label"
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 2.5,
+            border: `2px dashed ${T.borderStrong}`,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            bgcolor: '#F9FAFB',
+            transition: 'all 0.15s ease-in-out',
+            '&:hover': { borderColor: T.secondaryMain, bgcolor: '#FFF8F0' },
+          }}
+        >
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              if (!e.target.files?.length) return;
+              const files = Array.from(e.target.files).filter((f) => f.type.startsWith('image/'));
+              const remainingSlot = 10 - ((editingDeal?.existingImages?.length || 0) + (editingDeal?.newImages?.length || 0));
+              const allowedFiles = files.slice(0, remainingSlot);
+              const newItems = allowedFiles.map((file) => ({ file, url: URL.createObjectURL(file) }));
+              setEditingDeal({
+                ...editingDeal,
+                newImages: [...(editingDeal.newImages || []), ...newItems],
+              });
+              e.target.value = '';
+            }}
+          />
+          <CloudUploadIcon sx={{ color: T.textSecondary, fontSize: 28, mb: 0.5 }} />
+          <Typography sx={{  fontSize: 13, fontWeight: 600, color: T.textPrimary }}>
+            Click to upload deal image(s)
+          </Typography>
+          <Typography sx={{  fontSize: 11, color: T.textSecondary, mt: 0.25 }}>
+            PNG, JPG, WEBP — up to 5MB each
+          </Typography>
+        </Box>
+      )}
+    </div>
+
   </DialogContent>
   <DialogActions sx={{ p: 2 }}>
     <Button onClick={() => setEditingDeal(null)} color="inherit">Cancel</Button>
     <Button onClick={handleEditSave} variant="contained" disabled={updating} sx={{ bgcolor: T.primaryMain, color: 'white' }}>
       {updating ? 'Saving...' : 'Save Changes'}
+    </Button>
+  </DialogActions>
+</Dialog>
+
+{/* Delete Deal Confirmation Modal */}
+<Dialog open={!!pendingDelete} onClose={() => setPendingDelete(null)} maxWidth="xs" fullWidth>
+  <DialogTitle sx={{  fontWeight: 700, color: T.error }}>Delete Deal</DialogTitle>
+  <DialogContent dividers>
+    <Typography sx={{  fontSize: 14 }}>
+      Are you sure you want to delete <strong>"{pendingDelete?.title}"</strong>? This action cannot be undone.
+    </Typography>
+  </DialogContent>
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={() => setPendingDelete(null)} color="inherit">Cancel</Button>
+    <Button
+      onClick={() => doDeleteDeal(pendingDelete._id)}
+      variant="contained"
+      disabled={deleting}
+      sx={{ bgcolor: T.error, color: 'white', '&:hover': { bgcolor: '#B91C1C' } }}
+    >
+      {deleting ? 'Deleting...' : 'Delete Deal'}
     </Button>
   </DialogActions>
 </Dialog>

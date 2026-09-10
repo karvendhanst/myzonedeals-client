@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -39,7 +39,6 @@ const T = {
   dangerBg: "#FEF2F2",
   radius: 18,
   radiusSm: 12,
-  font: '"Plus Jakarta Sans", "Inter", sans-serif',
 };
 
 /* ----------------------------------------------------------------------- */
@@ -193,15 +192,15 @@ const LocationModal = ({ open, onLocationSelect }) => {
       open={open}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: `${T.radius}px`, fontFamily: T.font } }}
+      PaperProps={{ sx: { borderRadius: `${T.radius}px`,  } }}
     >
-      <DialogTitle sx={{ textAlign: "center", fontWeight: 800, fontFamily: T.font, pb: 0.5, pt: 3.5 }}>
+      <DialogTitle sx={{ textAlign: "center", fontWeight: 800,  pb: 0.5, pt: 3.5 }}>
         Where are you located?
       </DialogTitle>
       <DialogContent sx={{ px: { xs: 2.5, sm: 3.5 }, pb: 3.5 }}>
         <Typography
           variant="body2"
-          sx={{ color: T.textSecondary, mb: 2.5, textAlign: "center", fontFamily: T.font }}
+          sx={{ color: T.textSecondary, mb: 2.5, textAlign: "center",  }}
         >
           Enter your city or area so we can show deals near you.
         </Typography>
@@ -226,7 +225,7 @@ const LocationModal = ({ open, onLocationSelect }) => {
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             fullWidth
-            sx={{ fontSize: 15, fontFamily: T.font, color: T.textPrimary }}
+            sx={{ fontSize: 15,  color: T.textPrimary }}
             autoFocus
           />
           {loading && <CircularProgress size={18} thickness={5} sx={{ color: T.textFaint, mr: query ? 0.5 : 0 }} />}
@@ -252,7 +251,7 @@ const LocationModal = ({ open, onLocationSelect }) => {
             }}
           >
             <ErrorOutlineRounded sx={{ fontSize: 17, color: T.danger }} />
-            <Typography variant="body2" sx={{ color: T.danger, fontFamily: T.font, fontSize: 13 }}>
+            <Typography variant="body2" sx={{ color: T.danger,  fontSize: 13 }}>
               {error}
             </Typography>
           </Box>
@@ -293,12 +292,12 @@ const LocationModal = ({ open, onLocationSelect }) => {
                       primaryTypographyProps={{
                         fontSize: 14,
                         fontWeight: 700,
-                        fontFamily: T.font,
+                        
                         color: T.textPrimary,
                       }}
                       secondaryTypographyProps={{
                         fontSize: 12.5,
-                        fontFamily: T.font,
+                        
                         color: T.textSecondary,
                       }}
                     />
@@ -312,14 +311,14 @@ const LocationModal = ({ open, onLocationSelect }) => {
         {showEmptyState && (
           <Typography
             variant="body2"
-            sx={{ color: T.textFaint, textAlign: "center", mt: 2.5, fontFamily: T.font }}
+            sx={{ color: T.textFaint, textAlign: "center", mt: 2.5,  }}
           >
             No matches for "{query}". Try a different spelling or a nearby landmark.
           </Typography>
         )}
 
         <Divider sx={{ my: 2.5, borderColor: T.border }}>
-          <Typography variant="caption" sx={{ color: T.textFaint, fontFamily: T.font, px: 1 }}>
+          <Typography variant="caption" sx={{ color: T.textFaint,  px: 1 }}>
             or
           </Typography>
         </Divider>
@@ -335,7 +334,7 @@ const LocationModal = ({ open, onLocationSelect }) => {
             borderRadius: "999px",
             border: `1.5px solid ${T.ink}`,
             color: T.ink,
-            fontFamily: T.font,
+            
             fontWeight: 700,
             fontSize: 14,
             cursor: locating ? "default" : "pointer",

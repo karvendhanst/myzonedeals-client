@@ -110,7 +110,7 @@ export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
       {/* Header */}
       <Typography
         variant="h4"
-        sx={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, mb: 0.5 }}
+        sx={{  fontWeight: 400, mb: 0.5 }}
       >
         Dealer Portal
       </Typography>
@@ -133,7 +133,6 @@ export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
             border: 'none',
             borderRadius: 0,
             py: 1.2,
-            fontFamily: "'DM Sans', sans-serif",
             fontWeight: 500,
             fontSize: '0.95rem',
             color: '#666',
@@ -234,7 +233,6 @@ export default function LoginForm({ onSwitchToSignup, onUnverifiedEmail }) {
         sx={{
           bgcolor: '#E8971A',
           color: 'white',
-          fontFamily: "'DM Sans', sans-serif",
           fontWeight: 700,
           letterSpacing: 1.2,
           py: 1.6,

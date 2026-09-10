@@ -48,3 +48,9 @@ export const uploadProfilePictureApi = async (formData) => {
   });
   return data;
 };
+
+/** DELETE /api/dealer/profile/picture — remove avatar */
+export const removeProfilePictureApi = async () => {
+  const { data } = await dealerClient.delete("/profile/picture");
+  return data;
+};

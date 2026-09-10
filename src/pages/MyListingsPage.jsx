@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   Box, Container, Typography, Grid, Chip, Button,
   CircularProgress, Alert, IconButton, Menu, MenuItem,
@@ -89,7 +89,7 @@ export default function MyListingsPage() {
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ color: '#1a1a1a', fontFamily: '"Plus Jakarta Sans",sans-serif' }}
+            sx={{ color: '#1a1a1a' }}
           >
             My Listings
           </Typography>

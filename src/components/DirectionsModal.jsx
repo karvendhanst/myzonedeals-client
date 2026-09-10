@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -68,7 +68,6 @@ const T = {
   success: '#16A34A',
   border: 'rgba(15,23,42,0.08)',
   muted: '#6B7280',
-  font: '"Plus Jakarta Sans", sans-serif',
 };
 
 /* ─── User Location Marker ────────────────────────────────────────────────*/
@@ -125,20 +124,20 @@ const InfoStrip = ({ distance, duration, mode, onModeChange, routeLoading }) => 
     <div style={{ width: 34, height: 4, borderRadius: 2, background: 'rgba(15,23,42,0.12)', margin: '0 auto 12px' }} />
 
     {routeLoading ? (
-      <div style={{ textAlign: 'center', padding: '6px 0 12px', fontFamily: T.font, fontSize: 13, color: T.muted }}>
+      <div style={{ textAlign: 'center', padding: '6px 0 12px',  fontSize: 13, color: T.muted }}>
         Calculating route…
       </div>
     ) : distance && duration ? (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-          <span style={{ fontFamily: T.font, fontWeight: 800, fontSize: 20, color: T.primary }}>{duration}</span>
-          <span style={{ fontFamily: T.font, fontSize: 12, color: T.muted }}>· {distance}</span>
+          <span style={{  fontWeight: 800, fontSize: 20, color: T.primary }}>{duration}</span>
+          <span style={{  fontSize: 12, color: T.muted }}>· {distance}</span>
         </div>
         <div style={{
           marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
           background: T.success, flexShrink: 0,
         }} />
-        <span style={{ fontFamily: T.font, fontSize: 11, color: T.success, fontWeight: 700 }}>Fastest route</span>
+        <span style={{  fontSize: 11, color: T.success, fontWeight: 700 }}>Fastest route</span>
       </div>
     ) : null}
 
@@ -152,7 +151,7 @@ const InfoStrip = ({ distance, duration, mode, onModeChange, routeLoading }) => 
           onClick={() => onModeChange(m.value)}
           style={{
             display: "flex", alignItems: "center",flex: 1, justifyContent: "center", gap: 2, border: 'none', borderRadius: 10, padding: '9px 12px',
-            fontFamily: T.font, fontWeight: 700, fontSize: 13, cursor: 'pointer',
+             fontWeight: 700, fontSize: 13, cursor: 'pointer',
             background: mode === m.value ? T.primary : 'rgba(15,23,42,0.05)',
             color: mode === m.value ? '#fff' : '#374151',
             transition: 'background 0.18s ease',
@@ -180,11 +179,11 @@ const StatusScreen = ({ icon, iconBg, title, message, children }) => (
       fontSize: 28, boxShadow: '0 8px 24px rgba(15,23,42,0.14)',
     }}>{icon}</div>
     <div>
-      <div style={{ fontFamily: T.font, fontWeight: 700, fontSize: 15, color: T.primary, textAlign: 'center', marginBottom: 6 }}>
+      <div style={{  fontWeight: 700, fontSize: 15, color: T.primary, textAlign: 'center', marginBottom: 6 }}>
         {title}
       </div>
       {message && (
-        <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted, textAlign: 'center', lineHeight: 1.6 }}>
+        <div style={{  fontSize: 13, color: T.muted, textAlign: 'center', lineHeight: 1.6 }}>
           {message}
         </div>
       )}
@@ -198,7 +197,7 @@ const RetryButton = ({ onClick, label = 'Try Again' }) => (
     onClick={onClick}
     style={{
       border: 'none', borderRadius: 11, padding: '11px 28px',
-      fontFamily: T.font, fontWeight: 700, fontSize: 13, cursor: 'pointer',
+       fontWeight: 700, fontSize: 13, cursor: 'pointer',
       background: T.primary, color: '#fff',
       boxShadow: '0 4px 12px rgba(15,23,42,0.2)',
     }}
@@ -213,9 +212,13 @@ const RouteMap = ({ userLocation, shopLocation, routeCoords }) => {
 
   return (
     <MapContainer center={center} zoom={14} zoomControl={false} style={{ height: '100%', width: '100%' }}>
-      <TileLayer
+      {/* <TileLayer
         attribution="&copy; OpenStreetMap &copy; CARTO"
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+      /> */}
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <ZoomControl position="topright" />
       <MapBoundsFitter userLocation={userLocation} shopLocation={shopLocation} routeCoords={routeCoords} />
@@ -317,12 +320,12 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
           }}><DirectionsIcon/></div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: T.font, fontWeight: 700, fontSize: 14, color: T.primary,
+               fontWeight: 700, fontSize: 14, color: T.primary,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               Directions to {shopName}
             </div>
-            <div style={{ fontFamily: T.font, fontSize: 11, color: T.muted, marginTop: 1 }}>
+            <div style={{  fontSize: 11, color: T.muted, marginTop: 1 }}>
               {headerStatus}
             </div>
           </div>
@@ -371,7 +374,7 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
                   position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
                   background: 'rgba(220,38,38,0.92)', backdropFilter: 'blur(8px)',
                   color: '#fff', padding: '7px 14px', borderRadius: 20, fontSize: 12,
-                  fontFamily: T.font, fontWeight: 600, zIndex: 900, whiteSpace: 'nowrap',
+                   fontWeight: 600, zIndex: 900, whiteSpace: 'nowrap',
                 }}>
                   {error}
                 </div>

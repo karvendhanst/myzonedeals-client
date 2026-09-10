@@ -9,12 +9,15 @@ import {
   Link,
   CircularProgress,
   InputAdornment,
+  IconButton,
   Alert,
 } from '@mui/material';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useSignupMutation, useGoogleLoginMutation } from '../../api/useAuthMutations';
 import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../../store/authStore';
@@ -45,6 +48,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
   const [tab, setTab] = useState('signup');
   const [form, setForm] = useState(INITIAL);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const { mutate: signup, isPending, error: apiError } = useSignupMutation({
     onSuccess: () => onSuccess(form.email),
@@ -102,7 +106,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
       {/* Header */}
       <Typography
         variant="h4"
-        sx={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, mb: 0.5 }}
+        sx={{ fontWeight: 400, mb: 0.5 }}
       >
         Dealer Portal
       </Typography>
@@ -220,7 +224,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
       <Box sx={{ mb: 3.5 }}>
         <FieldLabel>Password</FieldLabel>
         <TextField
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           placeholder="••••••••"
           value={form.password}
           onChange={set('password')}
@@ -233,6 +237,21 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }) {
             startAdornment: (
               <InputAdornment position="start">
                 <LockOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword((v) => !v)}
+                  edge="end"
+                  size="small"
+                >
+                  {showPassword ? (
+                    <VisibilityOffOutlinedIcon sx={{ fontSize: 18 }} />
+                  ) : (
+                    <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
+                  )}
+                </IconButton>
               </InputAdornment>
             ),
           }}

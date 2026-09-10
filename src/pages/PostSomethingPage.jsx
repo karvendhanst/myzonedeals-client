@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Grid, Typography, Card, CardActionArea,
@@ -135,7 +135,6 @@ export default function PostSomethingPage() {
             variant="h3"
             sx={{
               color: 'text.primary',
-              fontFamily: '"Plus Jakarta Sans",sans-serif',
               fontWeight: 800,
               letterSpacing: '-0.02em',
               fontSize: { xs: 32, sm: 40, md: 48 },
@@ -278,7 +277,6 @@ export default function PostSomethingPage() {
                         variant="h6"
                         sx={{
                           color: 'text.primary',
-                          fontFamily: '"Plus Jakarta Sans",sans-serif',
                           fontWeight: 700,
                           fontSize: 19,
                           mb: 0.75,
@@ -367,7 +365,6 @@ export default function PostSomethingPage() {
                   <Box>
                     <Typography
                       sx={{
-                        fontFamily: '"Plus Jakarta Sans",sans-serif',
                         fontWeight: 700,
                         fontSize: 15.5,
                         color: 'text.primary',

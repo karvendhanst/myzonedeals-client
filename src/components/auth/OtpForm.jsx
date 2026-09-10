@@ -119,7 +119,6 @@ export default function OtpForm({ email, onSuccess, onBack, initialSent = false,
           mb: 4,
           p: 0,
           color: '#666',
-          fontFamily: "'DM Sans', sans-serif",
           textTransform: 'none',
           '&:hover': { bgcolor: 'transparent', color: '#333' },
         }}
@@ -146,7 +145,7 @@ export default function OtpForm({ email, onSuccess, onBack, initialSent = false,
       {/* Heading */}
       <Typography
         variant="h4"
-        sx={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, mb: 1 }}
+        sx={{ fontWeight: 400, mb: 1 }}
       >
         Check your email
       </Typography>
@@ -185,7 +184,7 @@ export default function OtpForm({ email, onSuccess, onBack, initialSent = false,
               textAlign: 'center',
               fontSize: 'clamp(1rem, 4vw, 1.5rem)',
               fontWeight: 700,
-              fontFamily: "'DM Sans', sans-serif",
+              
               border: digit
                 ? '2px solid #E8971A'
                 : '2px solid #E5E2DC',
@@ -213,7 +212,7 @@ export default function OtpForm({ email, onSuccess, onBack, initialSent = false,
         sx={{
           bgcolor: '#E8971A',
           color: 'white',
-          fontFamily: "'DM Sans', sans-serif",
+          
           fontWeight: 700,
           letterSpacing: 1.2,
           py: 1.6,
@@ -263,7 +262,7 @@ export default function OtpForm({ email, onSuccess, onBack, initialSent = false,
           sx={{
             bgcolor: '#E8971A',
             color: 'white',
-            fontFamily: "'DM Sans', sans-serif",
+            
             fontWeight: 600,
             borderRadius: '10px',
             '& .MuiAlert-icon': { color: 'white' },

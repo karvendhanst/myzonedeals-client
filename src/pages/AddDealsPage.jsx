@@ -41,7 +41,7 @@ const inputSx = {
     borderRadius: '8px',
     backgroundColor: '#fff',
     fontSize: '0.95rem',
-    fontFamily: '"Plus Jakarta Sans", sans-serif',
+    
     '& fieldset': { borderColor: '#E2E8F0' },
     '&:hover fieldset': { borderColor: '#192235' },
     '&.Mui-focused fieldset': { borderColor: '#F4A261', borderWidth: '2px' },
@@ -210,9 +210,16 @@ const SectionDivider = ({ label }) => (
 
 /* ─── Progress bar showing form completeness ─── */
 const FormProgress = ({ form }) => {
-  const fields = ['title', 'price', 'dealPrice', 'validFrom', 'validTill'];
-  const filled = fields.filter((f) => form[f]).length;
-  const pct = Math.round((filled / fields.length) * 100);
+  let fields = ['title', 'price', 'validFrom', 'validTill'];
+  if (form.dealType === 'discount') {
+    fields.push('dealPrice');
+  } else if (form.dealType === 'bogo') {
+    fields.push('buyQty', 'getQty');
+  } else if (form.dealType === 'freebie') {
+    fields.push('freeItemName');
+  }
+  const filled = fields.filter((f) => form[f] !== undefined && form[f] !== null && String(form[f]).trim() !== '').length;
+  const pct = fields.length > 0 ? Math.round((filled / fields.length) * 100) : 0;
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -342,7 +349,7 @@ const AddDealsPage = () => {
               <CheckCircleIcon sx={{ fontSize: 44, color: '#22C55E' }} />
             </Box>
             <Typography sx={{
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              
               fontSize: '1.5rem',
               fontWeight: 800,
               color: '#192235',
@@ -400,7 +407,7 @@ const AddDealsPage = () => {
               <SellIcon sx={{ fontSize: 15, color: '#F4A261' }} />
             </Box>
             <Typography sx={{
-              // fontFamily: '"Plus Jakarta Sans", sans-serif',
+              // 
               fontWeight: 500,
               textTransform: 'uppercase',
               fontSize: '1rem',
@@ -427,7 +434,7 @@ const AddDealsPage = () => {
               py: 0.9,
               fontSize: '0.82rem',
               boxShadow: 'none',
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              
               '&:hover': { bgcolor: '#1E293B', boxShadow: '0 4px 20px rgba(15,23,42,0.2)' },
               '&:disabled': { bgcolor: '#CBD5E1' },
             }}
@@ -702,7 +709,7 @@ const AddDealsPage = () => {
                 borderColor: '#E2E8F0',
                 color: '#6B7280',
                 fontWeight: 600,
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                
                 '&:hover': { borderColor: '#192235', color: '#192235' },
               }}
             >
@@ -719,7 +726,7 @@ const AddDealsPage = () => {
                 bgcolor: '#0F172A',
                 color: '#fff',
                 fontWeight: 700,
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                
                 boxShadow: 'none',
                 '&:hover': { bgcolor: '#1E293B' },
                 '&:disabled': { bgcolor: '#CBD5E1' },
