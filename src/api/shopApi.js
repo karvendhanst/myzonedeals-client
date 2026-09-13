@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true, 
+  baseURL: import.meta.env.MZDSERVER_BASE_URL,
+  withCredentials: true,
 });
 
 // Create Shop API
@@ -38,4 +38,4 @@ export const updateShopApi = async (shopId, formData) => {
     },
   });
   return data;
-};
+};

@@ -1,15 +1,15 @@
 // src/api/dealApi.js
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.MZDSERVER_BASE_URL;
 
 const dealClient = axios.create({
   baseURL: `${API_BASE}/deals`,
-  withCredentials: true,         
+  withCredentials: true,
 });
 
 dealClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('mzd_token');
+  const token = localStorage.getItem("mzd_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -21,9 +21,9 @@ dealClient.interceptors.response.use(
       err.response?.data?.message ??
       err.response?.data?.error ??
       err.message ??
-      'Unknown error';
+      "Unknown error";
     return Promise.reject(new Error(message));
-  }
+  },
 );
 
 /* ─────────────────────────────────────────
@@ -31,35 +31,31 @@ dealClient.interceptors.response.use(
 ───────────────────────────────────────── */
 
 export const createDeal = async (formData) => {
-  const { data } = await dealClient.post('/create', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+  const { data } = await dealClient.post("/create", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
 };
 
-
 export const fetchDealsByShop = async (shopId) => {
-  const { data } = await dealClient.get('/', { params: { shopId } });
+  const { data } = await dealClient.get("/", { params: { shopId } });
   return data;
 };
-
 
 export const fetchDealById = async (id) => {
   const { data } = await dealClient.get(`/${id}`);
   return data;
 };
 
-
 export const updateDeal = async (id, payload) => {
   const isFormData = payload instanceof FormData;
   const { data } = await dealClient.patch(
     `/${id}`,
     payload,
-    isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
+    isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : {},
   );
   return data;
 };
-
 
 export const deleteDeal = async (id) => {
   const { data } = await dealClient.delete(`/${id}`);
@@ -68,6 +64,6 @@ export const deleteDeal = async (id) => {
 
 export const fetchMapDeals = async () => {
   const { data } = await dealClient.get("/map");
-  
+
   return data;
 };

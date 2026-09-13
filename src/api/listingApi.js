@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.MZDSERVER_BASE_URL;
 
 const listingClient = axios.create({
   baseURL: `${API_BASE}/listings`,
@@ -8,7 +8,7 @@ const listingClient = axios.create({
 });
 
 listingClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('mzd_token');
+  const token = localStorage.getItem("mzd_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -20,22 +20,22 @@ listingClient.interceptors.response.use(
       err.response?.data?.message ??
       err.response?.data?.error ??
       err.message ??
-      'Unknown error';
+      "Unknown error";
     return Promise.reject(new Error(message));
-  }
+  },
 );
 
 /* ─── CRUD ─── */
 
 export const createListingApi = async (formData) => {
-  const { data } = await listingClient.post('/', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+  const { data } = await listingClient.post("/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
 };
 
 export const fetchListingsApi = async (params = {}) => {
-  const { data } = await listingClient.get('/', { params });
+  const { data } = await listingClient.get("/", { params });
   return data;
 };
 
@@ -46,7 +46,7 @@ export const fetchListingByIdApi = async (id) => {
 
 export const updateListingApi = async (id, formData) => {
   const { data } = await listingClient.patch(`/${id}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
 };
@@ -59,12 +59,12 @@ export const deleteListingApi = async (id) => {
 /* ─── Map / Geo ─── */
 
 export const fetchMapListingsApi = async (params = {}) => {
-  const { data } = await listingClient.get('/map', { params });
+  const { data } = await listingClient.get("/map", { params });
   return data;
 };
 
 export const fetchNearbyListingsApi = async (params = {}) => {
-  const { data } = await listingClient.get('/nearby', { params });
+  const { data } = await listingClient.get("/nearby", { params });
   return data;
 };
 
@@ -92,12 +92,14 @@ export const markSoldApi = async (id) => {
 
 /* ─── Admin ─── */
 
-export const approveListingApi = async (id, reviewReason = '') => {
+export const approveListingApi = async (id, reviewReason = "") => {
   const { data } = await listingClient.post(`/${id}/approve`, { reviewReason });
   return data;
 };
 
 export const rejectListingApi = async (id, rejectionReason) => {
-  const { data } = await listingClient.post(`/${id}/reject`, { rejectionReason });
+  const { data } = await listingClient.post(`/${id}/reject`, {
+    rejectionReason,
+  });
   return data;
 };
