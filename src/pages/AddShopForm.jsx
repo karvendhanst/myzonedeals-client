@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { State, City } from "country-state-city";
 import { useTheme, useMediaQuery } from "@mui/material";
@@ -25,8 +25,8 @@ function ShopSVG() {
       <rect x="15" y="190" width="230" height="6" rx="3" fill="rgba(244,162,97,0.15)" />
       <rect x="45" y="85" width="170" height="107" rx="3" fill="rgba(255,255,255,0.06)" />
       <rect x="35" y="72" width="190" height="22" rx="5" fill="#F4A261" />
-      {[0,1,2,3,4,5].map(i => (
-        <rect key={i} x={42 + i*16} y="72" width="10" height="22" rx="1" fill="rgba(255,255,255,0.15)" />
+      {[0, 1, 2, 3, 4, 5].map(i => (
+        <rect key={i} x={42 + i * 16} y="72" width="10" height="22" rx="1" fill="rgba(255,255,255,0.15)" />
       ))}
       <rect x="70" y="85" width="120" height="24" rx="3" fill="rgba(15,23,42,0.7)" stroke="#F4A261" strokeWidth="0.8" />
       <text x="130" y="101" textAnchor="middle" fill="#F4A261"
@@ -80,7 +80,7 @@ function StyledInput({ theme, hasError, style: extraStyle, ...props }) {
         background: focused ? theme.palette.background.paper : theme.palette.background.bg,
         fontSize: 13.5,
         color: theme.palette.text.primary,
-        
+
         outline: "none",
         width: "100%",
         boxSizing: "border-box",
@@ -112,7 +112,7 @@ function StyledSelect({ theme, ...props }) {
         background: focused ? theme.palette.background.paper : theme.palette.background.bg,
         fontSize: 13.5,
         color: theme.palette.text.primary,
-        
+
         outline: "none",
         width: "100%",
         boxSizing: "border-box",
@@ -141,7 +141,7 @@ function Field({ label, error, theme, children }) {
       {error && (
         <span style={{ fontSize: 11, color: "#EF4444", display: "flex", alignItems: "center", gap: 4 }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="#EF4444"/>
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r="0.5" fill="#EF4444" />
           </svg>
           {error}
         </span>
@@ -197,7 +197,7 @@ function DetectButton({ locating, onClick, theme }) {
         fontSize: 12,
         fontWeight: 600,
         color: theme.palette.secondary.main,
-        
+
         whiteSpace: "nowrap",
         alignSelf: "flex-end",
       }}
@@ -205,17 +205,17 @@ function DetectButton({ locating, onClick, theme }) {
       {locating ? (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={theme.palette.secondary.main}
           strokeWidth="2" strokeLinecap="round" style={{ animation: "spin 1s linear infinite" }}>
-          <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-          <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-          <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-          <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+          <line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
+          <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+          <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
+          <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" /><line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
         </svg>
       ) : (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={theme.palette.secondary.main}
           strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
-          <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+          <circle cx="12" cy="12" r="3" />
+          <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+          <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
         </svg>
       )}
       {locating ? "Locating…" : "Detect"}
@@ -261,13 +261,38 @@ export default function AddShopForm() {
       if (form.street && form.city && form.state) {
         setIsFetchingPincode(true);
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(form.street)}&city=${encodeURIComponent(form.city)}&state=${encodeURIComponent(form.state)}&country=India&format=json&addressdetails=1`);
-          const data = await res.json();
-          if (data && data.length > 0) {
-            const postCode = data[0].address?.postcode;
-            if (postCode) {
-              setForm(p => ({ ...p, pincode: postCode }));
-              setErrors(p => ({ ...p, pincode: "" }));
+          const address = `${form.street}, ${form.city}, ${form.state}, India`;
+          if (window.google?.maps?.Geocoder) {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({ address }, (results, status) => {
+              if (status === "OK" && results?.[0]) {
+                const postalComp = results[0].address_components?.find((c) =>
+                  c.types.includes("postal_code")
+                );
+                if (postalComp?.long_name) {
+                  setForm((p) => ({ ...p, pincode: postalComp.long_name }));
+                  setErrors((p) => ({ ...p, pincode: "" }));
+                }
+              }
+            });
+          } else {
+            const apiKey = import.meta.env.GOOGLE_MAPS_API_KEY;
+            if (apiKey) {
+              const res = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                  address
+                )}&key=${apiKey}`
+              );
+              const data = await res.json();
+              if (data.results?.[0]) {
+                const postalComp = data.results[0].address_components?.find((c) =>
+                  c.types.includes("postal_code")
+                );
+                if (postalComp?.long_name) {
+                  setForm((p) => ({ ...p, pincode: postalComp.long_name }));
+                  setErrors((p) => ({ ...p, pincode: "" }));
+                }
+              }
             }
           }
         } catch (err) {
@@ -291,12 +316,12 @@ export default function AddShopForm() {
 
   const handleChange = e => {
     const { name, value } = e.target;
-    
+
     if (name === 'stateCode') {
       const selectedState = states.find(s => s.isoCode === value);
-      setForm(p => ({ 
-        ...p, 
-        stateCode: value, 
+      setForm(p => ({
+        ...p,
+        stateCode: value,
         state: selectedState ? selectedState.name : "",
         city: "", // reset city when state changes
         pincode: ""
@@ -304,7 +329,7 @@ export default function AddShopForm() {
       setErrors(p => ({ ...p, state: "", city: "", pincode: "" }));
       return;
     }
-    
+
     setForm(p => ({ ...p, [name]: value }));
     setErrors(p => ({ ...p, [name]: "" }));
   };
@@ -412,7 +437,7 @@ export default function AddShopForm() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: isMobile ? 24 : 48 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, background: accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
               </svg>
             </div>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "0.2px" }}>MyZone Deals</span>
@@ -504,7 +529,7 @@ export default function AddShopForm() {
               fontSize: 12.5, fontWeight: 600, color: "#15803D",
             }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
               </svg>
               Shop submitted! Redirecting…
             </div>
@@ -518,7 +543,7 @@ export default function AddShopForm() {
           {/* ── Shop Information ── */}
           <SectionHeading theme={theme} label="Shop information" icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           } />
           <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 200px", gap: 14, marginBottom: 28 }}>
@@ -539,7 +564,7 @@ export default function AddShopForm() {
           {/* ── Shop Image ── */}
           <SectionHeading theme={theme} label="Shop photo" icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
             </svg>
           } />
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
@@ -568,7 +593,7 @@ export default function AddShopForm() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                    <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
                   </svg>
                 </div>
                 <div>
@@ -605,7 +630,7 @@ export default function AddShopForm() {
                   }}>
                     <label htmlFor="shop-image-upload" style={{ cursor: "pointer" }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                        <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
                       </svg>
                     </label>
                   </div>
@@ -636,7 +661,7 @@ export default function AddShopForm() {
           {/* ── Address ── */}
           <SectionHeading theme={theme} label="Shop address" icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
             </svg>
           } />
           <div style={{ display: "grid", gap: 14, marginBottom: 14 }}>
@@ -664,16 +689,16 @@ export default function AddShopForm() {
             <Field label="Pincode" error={errors.pincode} theme={theme}>
               <div style={{ position: "relative" }}>
                 <StyledInput theme={theme} name="pincode" value={form.pincode} onChange={handleChange}
-                  placeholder={isFetchingPincode ? "Fetching..." : "Enter 6-digit pincode"} 
-                  hasError={!!errors.pincode} 
+                  placeholder={isFetchingPincode ? "Fetching..." : "Enter 6-digit pincode"}
+                  hasError={!!errors.pincode}
                   maxLength={6}
                 />
                 {isFetchingPincode && (
                   <div style={{ position: "absolute", right: 12, top: 14 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={theme.palette.secondary.main} strokeWidth="2" strokeLinecap="round" style={{ animation: "spin 1s linear infinite" }}>
-                      <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-                      <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                      <line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
+                      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+                      <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
                     </svg>
                   </div>
                 )}
@@ -688,9 +713,9 @@ export default function AddShopForm() {
           {/* ── GPS Coordinates ── */}
           <SectionHeading theme={theme} label="GPS coordinates" icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              <circle cx="12" cy="12" r="3" />
+              <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
             </svg>
           } />
           <div style={{ display: "grid", gridTemplateColumns: isSmall ? "1fr" : "1fr 1fr auto", gap: 14, alignItems: "flex-end", marginBottom: 12 }}>
@@ -715,7 +740,7 @@ export default function AddShopForm() {
               borderRadius: 6, fontSize: 12, fontWeight: 600, color: accent,
             }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
               </svg>
               {form.latitude}, {form.longitude}
             </div>
@@ -739,9 +764,9 @@ export default function AddShopForm() {
                 <>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"
                     style={{ animation: "spin 1s linear infinite" }}>
-                    <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-                    <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                    <line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
+                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+                    <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
                   </svg>
                   Submitting…
                 </>
@@ -749,7 +774,7 @@ export default function AddShopForm() {
                 <>
                   Submit shop listing
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                   </svg>
                 </>
               )}

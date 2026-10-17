@@ -32,19 +32,19 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const location = useLocation(); 
+  const location = useLocation();
   const navigate = useNavigate();
   const { token, logout } = useAuthStore();
   const { data: profileResponse } = useGetProfile();
   const profilePicture = profileResponse?.data?.profilePicture;
 
-  const isOwnerDashboard = location.pathname === "/owner-dashboard"; 
+  const isOwnerDashboard = location.pathname === "/owner-dashboard";
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-    const navItems = [
+  const navItems = [
     isOwnerDashboard
       ? { label: "Add Shop", path: "/add-shop", icon: <AddBusinessIcon /> }
       : { label: (token && token !== "null") ? "Dashboard" : "Shop Portal", path: (token && token !== "null") ? "/owner-dashboard" : "/shop-portal", icon: <StorefrontIcon /> },
@@ -56,7 +56,7 @@ const Navbar = () => {
   };
 
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ p: 0 ,  height: '100%', backgroundColor: "background.paper" }}>
+    <Box onClick={handleDrawerToggle} sx={{ p: 0, height: '100%', backgroundColor: "background.paper" }}>
       <Box sx={{
         p: 3,
         borderBottom: '1px solid #eee',
@@ -68,45 +68,45 @@ const Navbar = () => {
       }}>
 
 
-                   <Box
-  component={Link}
-  to="/"
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    textDecoration: "none",
-    ml: "-20px"
-  }}
->
-  <Box
-    component="img"
-    src={mzdlogo}
-    alt="MyZoneDeals"
-    sx={{
-      width: { xs: 40 },
-      height: "auto",
-      display: "block",
-    }}
-  />
-</Box>
+        <Box
+          component={Link}
+          to="/"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+            ml: "-20px"
+          }}
+        >
+          <Box
+            component="img"
+            src={mzdlogo}
+            alt="MyZoneDeals"
+            sx={{
+              width: { xs: 40 },
+              height: "auto",
+              display: "block",
+            }}
+          />
+        </Box>
 
-<Typography
-  sx={{
-fontFamily: '"Potta One", system-ui', 
-fontSize: "18px",
-    color: "#F4A261",
-    ml: "-10px"
-  }}
->
-  MyZoneDeals
-</Typography>
-
-
+        <Typography
+          sx={{
+            fontFamily: '"Potta One", system-ui',
+            fontSize: "18px",
+            color: "#F4A261",
+            ml: "-10px"
+          }}
+        >
+          MyZoneDeals
+        </Typography>
 
 
 
 
-        
+
+
+
       </Box>
 
 
@@ -205,23 +205,23 @@ fontSize: "18px",
               </Button>
             </ListItem>
             <ListItem disablePadding sx={{ mb: 1 }}>
-            <Button
-  variant="outlined"
-  color="error"
-  startIcon={<LogoutIcon />}
-  fullWidth
-  onClick={handleLogout}
-  sx={{
-    justifyContent: "flex-start",
-    py: 1.5,
-    px: 2,
-    borderRadius: "6px",
-    textTransform: "none",
-    fontWeight: 600,
-  }}
->
-  Logout
-</Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<LogoutIcon />}
+                fullWidth
+                onClick={handleLogout}
+                sx={{
+                  justifyContent: "flex-start",
+                  py: 1.5,
+                  px: 2,
+                  borderRadius: "6px",
+                  textTransform: "none",
+                  fontWeight: 600,
+                }}
+              >
+                Logout
+              </Button>
             </ListItem>
           </>
         )}
@@ -264,9 +264,7 @@ fontSize: "18px",
                 justifyContent: "center",
               }}
             >
-              <LocalOfferIcon
-                sx={{ color: "background.paper", fontSize: { xs: 18, md: 24 } }}
-              />
+             
             </Box>
             <Typography
               variant="h6"
@@ -279,38 +277,20 @@ fontSize: "18px",
               MyZoneDeals.
             </Typography> */}
 
+            <LocalOfferIcon
+              sx={{ color: "#F4A261", fontSize: { xs: 18, md: 24, marginRight: 6 } }}
+            />
 
-            <Box
-  component={Link}
-  to="/"
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    textDecoration: "none",
-  }}
->
-  <Box
-    component="img"
-    src={mzdlogo}
-    alt="MyZoneDeals"
-    sx={{
-      width: { xs: 40 },
-      height: "auto",
-      display: "block",
-    }}
-  />
-</Box>
-
-<Typography
-  sx={{
-fontFamily: '"Potta One", system-ui', 
-fontSize: "18px",
-    color: "#F4A261",
-    ml: "-10px"
-  }}
->
-  MyZoneDeals
-</Typography>
+            <Typography
+              sx={{
+                fontFamily: "Righteous, sans-serif",
+                fontSize: "18px",
+                color: "#F4A261",
+                ml: "-10px"
+              }}
+            >
+              MyZoneDeals
+            </Typography>
 
 
 

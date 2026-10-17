@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.MZDSERVER_BASE_URL;
+const API_BASE = (import.meta.env.VITE_MZDSERVER_BASE_URL || import.meta.env.MZDSERVER_BASE_URL || "http://localhost:5000/api");
 
 const listingClient = axios.create({
   baseURL: `${API_BASE}/listings`,

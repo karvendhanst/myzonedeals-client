@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.MZDSERVER_BASE_URL;
+const BASE_URL = (import.meta.env.VITE_MZDSERVER_BASE_URL || import.meta.env.MZDSERVER_BASE_URL || "http://localhost:5000/api");
 
 const handleResponse = async (res) => {
   const data = await res.json();

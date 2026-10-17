@@ -1,394 +1,592 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Polyline,
-  ZoomControl,
+  Map,
   useMap,
-} from 'react-leaflet';
-import L from 'leaflet';
-import { customIcon } from './pinIcon';
+} from '@vis.gl/react-google-maps';
 import { useDirections } from '../hooks/useDirections';
+import { CLEAN_MAP_STYLES } from '../styles/mapStyles';
 
-import DirectionsIcon from '@mui/icons-material/Directions';
-import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 import CloseIcon from '@mui/icons-material/Close';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BlockIcon from '@mui/icons-material/Block';
-import WarningIcon from '@mui/icons-material/Warning';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
 
-/* ─── Inject component-scoped styles once ───────────────────────────────── */
-const MODAL_STYLES = `
-@keyframes dmSlideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ─── Styles ─────────────────────────────────────────────────────────── */
+const STYLES = `
+@keyframes dmUp   { from { opacity:0; transform:translateY(40px) } to { opacity:1; transform:translateY(0) } }
+@keyframes dmFade { from { opacity:0 } to { opacity:1 } }
+@keyframes dmSpin { to { transform:rotate(360deg) } }
+
+.dm-ctrl-btn {
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease, background 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
 }
-@keyframes dmFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.dm-ctrl-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
 }
-@keyframes userPulse {
-  0%   { transform: scale(1);   opacity: 0.85; }
-  50%  { transform: scale(1.55); opacity: 0.3;  }
-  100% { transform: scale(1);   opacity: 0.85; }
-}
-@keyframes spinArc {
-  to { transform: rotate(360deg); }
+.dm-ctrl-btn:active {
+  transform: scale(0.92);
 }
 
-.dm-user-dot-wrapper { position: relative; width: 18px; height: 18px; }
-.dm-user-dot {
-  position: absolute; inset: 0; margin: auto;
-  width: 14px; height: 14px; background: #2563EB; border-radius: 50%;
-  border: 3px solid #fff; box-shadow: 0 2px 10px rgba(37,99,235,0.6); z-index: 2;
+.dm-mode-btn {
+  transition: all .2s ease;
 }
-.dm-user-pulse {
-  position: absolute; inset: -6px; border-radius: 50%;
-  background: rgba(37,99,235,0.25); animation: userPulse 2s ease-out infinite; z-index: 1;
+.dm-gmaps-btn {
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
 }
-.dm-spinner {
-  width: 40px; height: 40px; border: 4px solid rgba(15,23,42,0.08);
-  border-top-color: #F4A261; border-radius: 50%; animation: spinArc 0.9s linear infinite;
+.dm-gmaps-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(26,115,232,.45) !important;
+}
+.dm-gmaps-btn:active {
+  transform: translateY(0);
 }
 `;
 
-if (typeof document !== 'undefined' && !document.getElementById('dm-styles')) {
+if (typeof document !== 'undefined' && !document.getElementById('dm-v4-styles')) {
   const s = document.createElement('style');
-  s.id = 'dm-styles';
-  s.textContent = MODAL_STYLES;
+  s.id = 'dm-v4-styles';
+  s.textContent = STYLES;
   document.head.appendChild(s);
 }
 
-/* ─── Design tokens (shared feel with DealDetailPanel) ───────────────────── */
 const T = {
-  primary: '#0F172A',
+  bg: '#0F172A',
   accent: '#F4A261',
-  success: '#16A34A',
+  blue: '#2563EB',
   border: 'rgba(15,23,42,0.08)',
   muted: '#6B7280',
+  surface: '#FFFFFF',
 };
 
-/* ─── User Location Marker ────────────────────────────────────────────────*/
-const userDotIcon = L.divIcon({
-  className: '',
-  html: `<div class="dm-user-dot-wrapper">
-           <div class="dm-user-pulse"></div>
-           <div class="dm-user-dot"></div>
-         </div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
-
-/* ─── Map auto-fit helper ─────────────────────────────────────────────────*/
-const MapBoundsFitter = ({ userLocation, shopLocation, routeCoords }) => {
+/* ─── Route Renderer ─── */
+const RouteRenderer = ({ userLocation, shopLat, shopLng, routePolyline }) => {
   const map = useMap();
-  const fittedRef = useRef(false);
 
   useEffect(() => {
-    if (!userLocation || !shopLocation) return;
-    if (fittedRef.current) return;
+    if (!map || !window.google?.maps) return;
 
-    const points = routeCoords?.length ? routeCoords : [userLocation, shopLocation];
-
-    try {
-      const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [48, 48], maxZoom: 16, animate: true });
-      fittedRef.current = true;
-    } catch (_) {
-      /* bounds calc failed — ignore */
+    // 1. Draw route polyline
+    let polyline = null;
+    if (routePolyline && routePolyline.length > 0) {
+      polyline = new window.google.maps.Polyline({
+        path: routePolyline,
+        geodesic: true,
+        strokeColor: '#2563EB',
+        strokeOpacity: 0.9,
+        strokeWeight: 5,
+        map,
+      });
     }
-  }, [map, userLocation, shopLocation, routeCoords]);
+
+    // 2. Add Markers for User and Destination
+    const markers = [];
+
+    if (userLocation) {
+      const userMarker = new window.google.maps.Marker({
+        position: { lat: userLocation[0], lng: userLocation[1] },
+        map,
+        title: 'Your Location',
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 7,
+          fillColor: '#2563EB',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 2.5,
+        },
+      });
+      markers.push(userMarker);
+    }
+
+    if (shopLat && shopLng) {
+      const shopMarker = new window.google.maps.Marker({
+        position: { lat: Number(shopLat), lng: Number(shopLng) },
+        map,
+        title: 'Destination',
+      });
+      markers.push(shopMarker);
+    }
+
+    // 3. Fit bounds to see entire route
+    const bounds = new window.google.maps.LatLngBounds();
+    if (routePolyline && routePolyline.length > 0) {
+      routePolyline.forEach((pt) => bounds.extend(pt));
+      map.fitBounds(bounds, { top: 35, right: 35, bottom: 35, left: 35 });
+    } else if (userLocation && shopLat && shopLng) {
+      bounds.extend({ lat: userLocation[0], lng: userLocation[1] });
+      bounds.extend({ lat: Number(shopLat), lng: Number(shopLng) });
+      map.fitBounds(bounds, { top: 35, right: 35, bottom: 35, left: 35 });
+    }
+
+    return () => {
+      if (polyline) polyline.setMap(null);
+      markers.forEach((m) => m.setMap(null));
+    };
+  }, [map, userLocation, shopLat, shopLng, routePolyline]);
 
   return null;
 };
 
-/* ─── Info Strip ─────────────────────────────────────────────────────────
- * Single source of truth for distance/duration — the modal header only
- * shows a short status line, so numbers aren't repeated in two places. */
-const InfoStrip = ({ distance, duration, mode, onModeChange, routeLoading }) => (
-  <div
-    style={{
-      position: 'absolute',
-      bottom: 0, left: 0, right: 0,
-      zIndex: 800,
-      background: '#fff',
-      borderTop: `1px solid ${T.border}`,
-      boxShadow: '0 -6px 20px rgba(15,23,42,0.08)',
-      borderRadius: '18px 18px 0 0',
-      padding: '14px 18px 18px',
-      animation: 'dmSlideUp 0.3s ease',
-    }}
-  >
-    <div style={{ width: 34, height: 4, borderRadius: 2, background: 'rgba(15,23,42,0.12)', margin: '0 auto 12px' }} />
+/* ─── Modern Custom Zoom Controls Overlay ─── */
+const CustomMapControls = ({ userLocation, shopLat, shopLng, routePolyline }) => {
+  const map = useMap();
 
-    {routeLoading ? (
-      <div style={{ textAlign: 'center', padding: '6px 0 12px',  fontSize: 13, color: T.muted }}>
-        Calculating route…
-      </div>
-    ) : distance && duration ? (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-          <span style={{  fontWeight: 800, fontSize: 20, color: T.primary }}>{duration}</span>
-          <span style={{  fontSize: 12, color: T.muted }}>· {distance}</span>
-        </div>
-        <div style={{
-          marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%',
-          background: T.success, flexShrink: 0,
-        }} />
-        <span style={{  fontSize: 11, color: T.success, fontWeight: 700 }}>Fastest route</span>
-      </div>
-    ) : null}
+  const handleZoomIn = useCallback(() => {
+    if (map) map.setZoom((map.getZoom() || 14) + 1);
+  }, [map]);
 
-    <div style={{ display: 'flex', gap: 8 }}>
-      {[
-        { value: 'driving', label: 'Driving', icon: <DirectionsCarIcon/> },
-        { value: 'walking', label: 'Walking', icon: <DirectionsWalkIcon/> },
-      ].map((m) => (
-        <button
-          key={m.value}
-          onClick={() => onModeChange(m.value)}
-          style={{
-            display: "flex", alignItems: "center",flex: 1, justifyContent: "center", gap: 2, border: 'none', borderRadius: 10, padding: '9px 12px',
-             fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            background: mode === m.value ? T.primary : 'rgba(15,23,42,0.05)',
-            color: mode === m.value ? '#fff' : '#374151',
-            transition: 'background 0.18s ease',
-          }}
-        >
-         <span>{m.icon}</span>
-         <span>{m.label}</span> 
-        </button>
-      ))}
-    </div>
-  </div>
-);
+  const handleZoomOut = useCallback(() => {
+    if (map) map.setZoom((map.getZoom() || 14) - 1);
+  }, [map]);
 
-/* ─── Status screens ──────────────────────────────────────────────────────*/
-const StatusScreen = ({ icon, iconBg, title, message, children }) => (
-  <div style={{
-    flex: 1, display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center', gap: 16,
-    background: '#FAFBFF', padding: '0 28px',
-    animation: 'dmFadeIn 0.3s ease',
-  }}>
-    <div style={{
-      width: 64, height: 64, borderRadius: 18, background: iconBg,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 28, boxShadow: '0 8px 24px rgba(15,23,42,0.14)',
-    }}>{icon}</div>
-    <div>
-      <div style={{  fontWeight: 700, fontSize: 15, color: T.primary, textAlign: 'center', marginBottom: 6 }}>
-        {title}
-      </div>
-      {message && (
-        <div style={{  fontSize: 13, color: T.muted, textAlign: 'center', lineHeight: 1.6 }}>
-          {message}
-        </div>
-      )}
-    </div>
-    {children}
-  </div>
-);
-
-const RetryButton = ({ onClick, label = 'Try Again' }) => (
-  <button
-    onClick={onClick}
-    style={{
-      border: 'none', borderRadius: 11, padding: '11px 28px',
-       fontWeight: 700, fontSize: 13, cursor: 'pointer',
-      background: T.primary, color: '#fff',
-      boxShadow: '0 4px 12px rgba(15,23,42,0.2)',
-    }}
-  >
-    {label}
-  </button>
-);
-
-/* ─── Route Map ──────────────────────────────────────────────────────────*/
-const RouteMap = ({ userLocation, shopLocation, routeCoords }) => {
-  const center = userLocation ?? shopLocation ?? [20.5937, 78.9629];
-
-  return (
-    <MapContainer center={center} zoom={14} zoomControl={false} style={{ height: '100%', width: '100%' }}>
-      {/* <TileLayer
-        attribution="&copy; OpenStreetMap &copy; CARTO"
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-      /> */}
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <ZoomControl position="topright" />
-      <MapBoundsFitter userLocation={userLocation} shopLocation={shopLocation} routeCoords={routeCoords} />
-
-      {routeCoords && routeCoords.length > 0 && (
-        <Polyline
-          positions={routeCoords}
-          pathOptions={{ color: '#2563EB', weight: 5, opacity: 0.82, lineCap: 'round', lineJoin: 'round' }}
-        />
-      )}
-
-      {userLocation && <Marker position={userLocation} icon={userDotIcon} />}
-      {shopLocation && <Marker position={shopLocation} icon={customIcon} />}
-    </MapContainer>
-  );
-};
-
-/* ─── MAIN COMPONENT ───────────────────────────────────────────────────── */
-const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
-  const [mode, setMode] = useState('driving');
-  const [hasOpenedOnce, setHasOpenedOnce] = useState(false);
-
-  const {
-    userLocation, routeCoords, distance, duration,
-    gpsLoading, routeLoading, error, permissionDenied, retry,
-  } = useDirections(shopLat, shopLng, mode, shopName);
-
-  const shopLocation = useMemo(
-    () => (shopLat && shopLng ? [Number(shopLat), Number(shopLng)] : null),
-    [shopLat, shopLng],
-  );
-
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [open]);
-
-  useEffect(() => {
-    if (open) setHasOpenedOnce(true);
-  }, [open]);
-
-  if (!hasOpenedOnce) return null;
-
-  const showMap = !gpsLoading && !permissionDenied && !error;
-
-  // Short, single-line status for the header — numbers live only in the InfoStrip.
-  const headerStatus = gpsLoading
-    ? 'Getting your location…'
-    : permissionDenied
-    ? 'Location access needed'
-    : error && !routeCoords
-    ? 'Route unavailable'
-    : routeLoading
-    ? 'Finding the fastest route…'
-    : userLocation
-    ? 'Route ready'
-    : 'Waiting for GPS…';
+  const handleRecenter = useCallback(() => {
+    if (!map || !window.google?.maps) return;
+    const bounds = new window.google.maps.LatLngBounds();
+    if (routePolyline && routePolyline.length > 0) {
+      routePolyline.forEach((pt) => bounds.extend(pt));
+      map.fitBounds(bounds, { top: 35, right: 35, bottom: 35, left: 35 });
+    } else if (userLocation && shopLat && shopLng) {
+      bounds.extend({ lat: userLocation[0], lng: userLocation[1] });
+      bounds.extend({ lat: Number(shopLat), lng: Number(shopLng) });
+      map.fitBounds(bounds, { top: 35, right: 35, bottom: 35, left: 35 });
+    }
+  }, [map, userLocation, shopLat, shopLng, routePolyline]);
 
   return (
     <div
-      onClick={onClose}
+      style={{
+        position: 'absolute',
+        bottom: 12,
+        right: 12,
+        zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+      }}
+    >
+      {/* Recenter Button */}
+      <button
+        type="button"
+        className="dm-ctrl-btn"
+        onClick={handleRecenter}
+        title="Fit route"
+        aria-label="Fit route"
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.6)',
+          color: T.bg,
+        }}
+      >
+        <MyLocationIcon sx={{ fontSize: 18 }} />
+      </button>
+
+      {/* Modern Stacked Zoom Controls */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: 10,
+          overflow: 'hidden',
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.6)',
+        }}
+      >
+        <button
+          type="button"
+          className="dm-ctrl-btn"
+          onClick={handleZoomIn}
+          title="Zoom in"
+          aria-label="Zoom in"
+          style={{
+            width: 36,
+            height: 36,
+            color: T.bg,
+            borderBottom: '1px solid rgba(15,23,42,0.08)',
+          }}
+        >
+          <AddIcon sx={{ fontSize: 18 }} />
+        </button>
+        <button
+          type="button"
+          className="dm-ctrl-btn"
+          onClick={handleZoomOut}
+          title="Zoom out"
+          aria-label="Zoom out"
+          style={{
+            width: 36,
+            height: 36,
+            color: T.bg,
+          }}
+        >
+          <RemoveIcon sx={{ fontSize: 18 }} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Stat Card ─── */
+const StatCard = ({ icon, label, value, sub }) => (
+  <div
+    style={{
+      flex: 1,
+      background: '#F8FAFC',
+      borderRadius: 14,
+      padding: '12px 14px',
+      border: `1px solid ${T.border}`,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 4,
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: T.muted }}>
+      {icon}
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        {label}
+      </span>
+    </div>
+    <div style={{ fontWeight: 800, fontSize: 18, color: T.bg, lineHeight: 1.1 }}>
+      {value}
+    </div>
+    {sub && <div style={{ fontSize: 11, color: T.muted }}>{sub}</div>}
+  </div>
+);
+
+/* ─── Directions Modal ─── */
+const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
+  const [mode, setMode] = useState('DRIVE'); // 'DRIVE' or 'WALK'
+  const [hasOpened, setHasOpened] = useState(false);
+
+  const {
+    userLocation,
+    distance,
+    duration,
+    routePolyline,
+    gpsLoading,
+    routeLoading,
+    permissionDenied,
+    retry,
+    googleMapsUrl,
+  } = useDirections(shopLat, shopLng, mode);
+
+  useEffect(() => {
+    if (open) setHasOpened(true);
+  }, [open]);
+
+  const center = useMemo(() => {
+    if (userLocation) return { lat: userLocation[0], lng: userLocation[1] };
+    if (shopLat && shopLng) return { lat: Number(shopLat), lng: Number(shopLng) };
+    return { lat: 10.9678, lng: 78.062 };
+  }, [userLocation, shopLat, shopLng]);
+
+  if (!open && !hasOpened) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Directions to ${shopName}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 1300,
-        background: 'rgba(15,23,42,0.5)',
-        backdropFilter: 'blur(4px)',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
         display: open ? 'flex' : 'none',
-        animation: open ? 'dmFadeIn 0.2s ease' : 'none',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        background: 'rgba(15,23,42,0.5)',
+        backdropFilter: 'blur(5px)',
+        animation: 'dmFade .2s ease',
       }}
     >
       <div
-        onClick={(e) => e.stopPropagation()}
         style={{
+          position: 'relative',
           width: '100%',
           maxWidth: 540,
-          height: '88dvh',
-          background: '#fff',
-          borderRadius: '18px 18px 0 0',
+          maxHeight: '90vh',
+          margin: '0 auto',
+          background: T.surface,
+          borderRadius: '24px 24px 0 0',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 -8px 40px rgba(15,23,42,0.2)',
-          animation: 'dmSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          boxShadow: '0 -12px 48px rgba(15,23,42,0.25)',
+          animation: 'dmUp .3s cubic-bezier(.34,1.56,.64,1)',
         }}
       >
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(15,23,42,0.15)' }} />
+        </div>
+
         {/* Header */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '14px 16px', borderBottom: `1px solid ${T.border}`,
-          flexShrink: 0,
-        }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, flexShrink: 0,
-          }}><DirectionsIcon/></div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-               fontWeight: 700, fontSize: 14, color: T.primary,
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            }}>
-              Directions to {shopName}
-            </div>
-            <div style={{  fontSize: 11, color: T.muted, marginTop: 1 }}>
-              {headerStatus}
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close directions"
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '8px 18px 12px',
+            borderBottom: `1px solid ${T.border}`,
+          }}
+        >
+          <div
             style={{
-              width: 32, height: 32, borderRadius: 9,
-              border: `1px solid ${T.border}`,
-              background: 'transparent', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: T.muted, fontSize: 15, flexShrink: 0,
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              background: 'linear-gradient(135deg,#0F172A 0%,#1e3a5f 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            <CloseIcon sx={{ fontSize: 16 }} />
+            <LocationOnIcon sx={{ fontSize: 20, color: '#F4A261' }} />
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.muted, textTransform: 'uppercase' }}>
+              Directions to
+            </div>
+            <div
+              style={{
+                fontWeight: 800,
+                fontSize: 16,
+                color: T.bg,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {shopName || 'Destination'}
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: '#F8FAFC',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: T.muted,
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 18 }} />
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {gpsLoading && (
-            <StatusScreen icon={<LocationOnIcon sx={{ fontSize: 'inherit' }} />} iconBg="#EEF2FF" title="Detecting your location…" message="Please allow location access when prompted." />
-          )}
+        {/* Interactive Map Preview with Polyline Route */}
+        <div style={{ position: 'relative', width: '100%', height: 260, background: '#e2e8f0' }}>
+          <Map
+            defaultCenter={center}
+            defaultZoom={14}
+            styles={CLEAN_MAP_STYLES}
+            disableDefaultUI={true}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <RouteRenderer
+              userLocation={userLocation}
+              shopLat={shopLat}
+              shopLng={shopLng}
+              routePolyline={routePolyline}
+            />
+            <CustomMapControls
+              userLocation={userLocation}
+              shopLat={shopLat}
+              shopLng={shopLng}
+              routePolyline={routePolyline}
+            />
+          </Map>
 
-          {!gpsLoading && permissionDenied && (
-            <StatusScreen
-              icon={<BlockIcon sx={{ fontSize: 'inherit' }} />} iconBg="#FEE2E2" title="Location access denied"
-              message="Enable location access in your browser settings, then try again."
+          {(gpsLoading || routeLoading) && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 10,
+                left: 10,
+                background: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(8px)',
+                padding: '6px 12px',
+                borderRadius: 20,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                color: T.blue,
+                zIndex: 10,
+              }}
             >
-              <RetryButton onClick={retry} />
-            </StatusScreen>
-          )}
-
-          {!gpsLoading && !permissionDenied && error && !routeCoords && (
-            <StatusScreen icon={<WarningIcon sx={{ fontSize: 'inherit' }} />} iconBg="#FEF3C7" title="Couldn't calculate a route" message={error}>
-              <RetryButton onClick={retry} />
-            </StatusScreen>
-          )}
-
-          {showMap && (
-            <div style={{ flex: 1, position: 'relative' }}>
-              <RouteMap userLocation={userLocation} shopLocation={shopLocation} routeCoords={routeCoords} />
-
-              {error && (
-                <div style={{
-                  position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-                  background: 'rgba(220,38,38,0.92)', backdropFilter: 'blur(8px)',
-                  color: '#fff', padding: '7px 14px', borderRadius: 20, fontSize: 12,
-                   fontWeight: 600, zIndex: 900, whiteSpace: 'nowrap',
-                }}>
-                  {error}
-                </div>
-              )}
-
-              <InfoStrip
-                distance={distance}
-                duration={duration}
-                mode={mode}
-                onModeChange={setMode}
-                routeLoading={routeLoading}
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  border: '2px solid currentColor',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'dmSpin .8s linear infinite',
+                }}
               />
+              {gpsLoading ? 'Detecting your location…' : 'Calculating route path…'}
             </div>
           )}
+        </div>
+
+        {/* Details & Action Controls */}
+        <div style={{ padding: '16px 20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {permissionDenied && (
+            <div
+              style={{
+                background: '#FEF2F2',
+                border: '1px solid #FCA5A5',
+                borderRadius: 12,
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#B91C1C', fontSize: 13 }}>
+                <BlockIcon sx={{ fontSize: 18 }} />
+                <span>Location access denied</span>
+              </div>
+              <button
+                onClick={retry}
+                style={{
+                  border: 'none',
+                  background: '#B91C1C',
+                  color: '#fff',
+                  borderRadius: 8,
+                  padding: '6px 12px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <StatCard
+              icon={<AccessTimeIcon sx={{ fontSize: 16 }} />}
+              label="Estimated Time"
+              value={duration || '—'}
+              sub={routeLoading ? 'Calculating…' : `via ${mode === 'DRIVE' ? 'roads' : 'walkways'}`}
+            />
+            <StatCard
+              icon={<StraightenIcon sx={{ fontSize: 16 }} />}
+              label="Route Distance"
+              value={distance || '—'}
+              sub="actual road distance"
+            />
+          </div>
+
+          {/* Mode Switcher */}
+          <div
+            style={{
+              display: 'flex',
+              background: 'rgba(15,23,42,0.05)',
+              borderRadius: 12,
+              padding: 4,
+              gap: 6,
+            }}
+          >
+            {[
+              { id: 'DRIVE', label: 'Driving', icon: <DirectionsCarIcon sx={{ fontSize: 18 }} /> },
+              { id: 'WALK', label: 'Walking', icon: <DirectionsWalkIcon sx={{ fontSize: 18 }} /> },
+            ].map((m) => (
+              <button
+                key={m.id}
+                className="dm-mode-btn"
+                onClick={() => setMode(m.id)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '9px 12px',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  background: mode === m.id ? T.bg : 'transparent',
+                  color: mode === m.id ? '#fff' : '#4B5563',
+                  boxShadow: mode === m.id ? '0 2px 8px rgba(15,23,42,0.2)' : 'none',
+                }}
+              >
+                {m.icon}
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Open in Google Maps */}
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dm-gmaps-btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              textDecoration: 'none',
+              background: 'linear-gradient(135deg, #1a73e8 0%, #1557b0 100%)',
+              color: '#fff',
+              borderRadius: 12,
+              padding: '13px 18px',
+              fontWeight: 700,
+              fontSize: 14,
+              boxShadow: '0 4px 16px rgba(26,115,232,0.35)',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                fill="#fff"
+              />
+              <circle cx="12" cy="9" r="2.5" fill="#1a73e8" />
+            </svg>
+            Start Turn-by-Turn in Google Maps
+            <OpenInNewIcon sx={{ fontSize: 16, opacity: 0.85 }} />
+          </a>
         </div>
       </div>
     </div>

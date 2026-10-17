@@ -1,50 +1,82 @@
-import React, { useState, useRef } from "react";
-import { useMap } from "react-leaflet";
+import React, { useState, useRef, useEffect } from "react";
+import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Box, InputBase, Paper, List, ListItemButton, ListItemText, CircularProgress } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
 const MapSearch = () => {
   const map = useMap();
+  const placesLib = useMapsLibrary("places");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef(null);
+  const autocompleteServiceRef = useRef(null);
+  const placesServiceRef = useRef(null);
 
-  const fetchResults = async (value) => {
+  useEffect(() => {
+    if (placesLib) {
+      autocompleteServiceRef.current = new placesLib.AutocompleteService();
+      // PlacesService requires a map instance or dummy element
+      if (map) {
+        placesServiceRef.current = new placesLib.PlacesService(map);
+      }
+    }
+  }, [placesLib, map]);
+
+  const fetchResults = (value) => {
     if (!value.trim()) {
       setResults([]);
       return;
     }
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(
-          value
-        )}`
-      );
-      const data = await res.json();
-      setResults(data);
-    } catch (err) {
-      console.error("Geocoding error:", err);
-      setResults([]);
-    } finally {
-      setLoading(false);
+
+    if (!autocompleteServiceRef.current) {
+      return;
     }
+
+    setLoading(true);
+    autocompleteServiceRef.current.getPlacePredictions(
+      { input: value },
+      (predictions, status) => {
+        setLoading(false);
+        if (
+          status === window.google.maps.places.PlacesServiceStatus.OK &&
+          predictions
+        ) {
+          setResults(predictions);
+        } else {
+          setResults([]);
+        }
+      }
+    );
   };
 
   const handleChange = (e) => {
     const value = e.target.value;
     setQuery(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchResults(value), 400);
+    debounceRef.current = setTimeout(() => fetchResults(value), 350);
   };
 
   const handleSelect = (place) => {
-    const lat = parseFloat(place.lat);
-    const lon = parseFloat(place.lon);
-    map.flyTo([lat, lon], 15, { duration: 1.2 });
-    setQuery(place.display_name);
+    setQuery(place.description);
     setResults([]);
+
+    if (placesServiceRef.current && place.place_id) {
+      placesServiceRef.current.getDetails(
+        { placeId: place.place_id, fields: ["geometry"] },
+        (details, status) => {
+          if (
+            status === window.google.maps.places.PlacesServiceStatus.OK &&
+            details?.geometry?.location &&
+            map
+          ) {
+            const loc = details.geometry.location;
+            map.panTo(loc);
+            map.setZoom(15);
+          }
+        }
+      );
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -59,7 +91,7 @@ const MapSearch = () => {
         position: "absolute",
         top: 12,
         left: 12,
-        zIndex: 1000,
+        zIndex: 10,
         width: { xs: "calc(100% - 24px)", sm: 320 },
       }}
     >
@@ -72,7 +104,8 @@ const MapSearch = () => {
           borderRadius: 2,
           backgroundColor: "background.paper",
           border: 1,
-    borderColor: "secondary.main",
+          borderColor: "secondary.main",
+          boxShadow: 2,
         }}
       >
         <SearchIcon sx={{ color: "text.secondary", mr: 1 }} fontSize="small" />
@@ -93,8 +126,10 @@ const MapSearch = () => {
             {results.map((place) => (
               <ListItemButton key={place.place_id} onClick={() => handleSelect(place)}>
                 <ListItemText
-                  primary={place.display_name}
-                  primaryTypographyProps={{ fontSize: 13 }}
+                  primary={place.structured_formatting?.main_text || place.description}
+                  secondary={place.structured_formatting?.secondary_text}
+                  primaryTypographyProps={{ fontSize: 13, fontWeight: 500 }}
+                  secondaryTypographyProps={{ fontSize: 12 }}
                 />
               </ListItemButton>
             ))}

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -19,6 +19,7 @@ import PlaceRounded from "@mui/icons-material/PlaceRounded";
 import MyLocationRounded from "@mui/icons-material/MyLocationRounded";
 import CloseRounded from "@mui/icons-material/CloseRounded";
 import ErrorOutlineRounded from "@mui/icons-material/ErrorOutlineRounded";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
 /* ----------------------------------------------------------------------- */
 /*  Design tokens — matches the rest of the dealer app                     */
@@ -41,19 +42,6 @@ const T = {
   radiusSm: 12,
 };
 
-/* ----------------------------------------------------------------------- */
-/*  Helpers                                                                 */
-/* ----------------------------------------------------------------------- */
-
-// Splits "Koramangala, Bengaluru, Karnataka, 560034, India" into a bold
-// primary line and a muted secondary line, so results scan faster.
-const splitPlaceName = (displayName = "") => {
-  const parts = displayName.split(",").map((p) => p.trim());
-  const primary = parts[0] || displayName;
-  const secondary = parts.slice(1, 4).join(", ");
-  return { primary, secondary };
-};
-
 const LocationModal = ({ open, onLocationSelect }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -62,7 +50,23 @@ const LocationModal = ({ open, onLocationSelect }) => {
   const [error, setError] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const debounceRef = useRef(null);
-  const abortRef = useRef(null);
+
+  const placesLib = useMapsLibrary("places");
+  const geocodingLib = useMapsLibrary("geocoding");
+  const autocompleteServiceRef = useRef(null);
+  const geocoderRef = useRef(null);
+
+  useEffect(() => {
+    if (placesLib) {
+      autocompleteServiceRef.current = new placesLib.AutocompleteService();
+    }
+  }, [placesLib]);
+
+  useEffect(() => {
+    if (geocodingLib) {
+      geocoderRef.current = new geocodingLib.Geocoder();
+    }
+  }, [geocodingLib]);
 
   useEffect(() => {
     if (!open) {
@@ -73,7 +77,7 @@ const LocationModal = ({ open, onLocationSelect }) => {
     }
   }, [open]);
 
-  const fetchResults = async (value) => {
+  const fetchResults = (value) => {
     if (!value.trim()) {
       setResults([]);
       setError("");
@@ -81,38 +85,40 @@ const LocationModal = ({ open, onLocationSelect }) => {
       return;
     }
 
-    if (abortRef.current) abortRef.current.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+    if (!autocompleteServiceRef.current) {
+      return;
+    }
 
     setLoading(true);
     setError("");
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(
-          value
-        )}`,
-        { signal: controller.signal }
-      );
-      const data = await res.json();
-      setResults(data);
-      setActiveIndex(-1);
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error("Geocoding error:", err);
-        setError("Couldn't search right now. Check your connection and try again.");
-        setResults([]);
+
+    autocompleteServiceRef.current.getPlacePredictions(
+      { input: value },
+      (predictions, status) => {
+        setLoading(false);
+        if (
+          status === window.google?.maps?.places?.PlacesServiceStatus?.OK &&
+          predictions
+        ) {
+          setResults(predictions);
+          setActiveIndex(-1);
+        } else if (
+          status === window.google?.maps?.places?.PlacesServiceStatus?.ZERO_RESULTS
+        ) {
+          setResults([]);
+        } else {
+          setError("Couldn't search right now. Check your connection or API key.");
+          setResults([]);
+        }
       }
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   const handleChange = (e) => {
     const value = e.target.value;
     setQuery(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchResults(value), 400);
+    debounceRef.current = setTimeout(() => fetchResults(value), 350);
   };
 
   const handleClear = () => {
@@ -132,9 +138,20 @@ const LocationModal = ({ open, onLocationSelect }) => {
   };
 
   const handleSelect = (place) => {
-    const lat = parseFloat(place.lat);
-    const lon = parseFloat(place.lon);
-    commitLocation({ lat, lon, name: place.display_name });
+    if (!geocoderRef.current) return;
+
+    geocoderRef.current.geocode({ placeId: place.place_id }, (geoResults, geoStatus) => {
+      if (geoStatus === "OK" && geoResults?.[0]?.geometry?.location) {
+        const loc = geoResults[0].geometry.location;
+        commitLocation({
+          lat: loc.lat(),
+          lon: loc.lng(),
+          name: place.description,
+        });
+      } else {
+        setError("Unable to get coordinates for the selected place.");
+      }
+    });
   };
 
   const handleUseCurrentLocation = () => {
@@ -145,24 +162,29 @@ const LocationModal = ({ open, onLocationSelect }) => {
     setLocating(true);
     setError("");
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const { latitude, longitude } = position.coords;
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await res.json();
-          commitLocation({
-            lat: latitude,
-            lon: longitude,
-            name: data?.display_name || "Current location",
-          });
-        } catch (err) {
-          console.error("Reverse geocoding error:", err);
+        if (!geocoderRef.current) {
           commitLocation({ lat: latitude, lon: longitude, name: "Current location" });
-        } finally {
           setLocating(false);
+          return;
         }
+
+        geocoderRef.current.geocode(
+          { location: { lat: latitude, lng: longitude } },
+          (geoResults, geoStatus) => {
+            setLocating(false);
+            if (geoStatus === "OK" && geoResults?.[0]) {
+              commitLocation({
+                lat: latitude,
+                lon: longitude,
+                name: geoResults[0].formatted_address || "Current location",
+              });
+            } else {
+              commitLocation({ lat: latitude, lon: longitude, name: "Current location" });
+            }
+          }
+        );
       },
       (err) => {
         console.error("Geolocation error:", err);
@@ -192,15 +214,15 @@ const LocationModal = ({ open, onLocationSelect }) => {
       open={open}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: `${T.radius}px`,  } }}
+      PaperProps={{ sx: { borderRadius: `${T.radius}px` } }}
     >
-      <DialogTitle sx={{ textAlign: "center", fontWeight: 800,  pb: 0.5, pt: 3.5 }}>
+      <DialogTitle sx={{ textAlign: "center", fontWeight: 800, pb: 0.5, pt: 3.5 }}>
         Where are you located?
       </DialogTitle>
       <DialogContent sx={{ px: { xs: 2.5, sm: 3.5 }, pb: 3.5 }}>
         <Typography
           variant="body2"
-          sx={{ color: T.textSecondary, mb: 2.5, textAlign: "center",  }}
+          sx={{ color: T.textSecondary, mb: 2.5, textAlign: "center" }}
         >
           Enter your city or area so we can show deals near you.
         </Typography>
@@ -225,7 +247,7 @@ const LocationModal = ({ open, onLocationSelect }) => {
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             fullWidth
-            sx={{ fontSize: 15,  color: T.textPrimary }}
+            sx={{ fontSize: 15, color: T.textPrimary }}
             autoFocus
           />
           {loading && <CircularProgress size={18} thickness={5} sx={{ color: T.textFaint, mr: query ? 0.5 : 0 }} />}
@@ -251,7 +273,7 @@ const LocationModal = ({ open, onLocationSelect }) => {
             }}
           >
             <ErrorOutlineRounded sx={{ fontSize: 17, color: T.danger }} />
-            <Typography variant="body2" sx={{ color: T.danger,  fontSize: 13 }}>
+            <Typography variant="body2" sx={{ color: T.danger, fontSize: 13 }}>
               {error}
             </Typography>
           </Box>
@@ -268,7 +290,8 @@ const LocationModal = ({ open, onLocationSelect }) => {
           >
             <List dense disablePadding>
               {results.map((place, i) => {
-                const { primary, secondary } = splitPlaceName(place.display_name);
+                const primary = place.structured_formatting?.main_text || place.description;
+                const secondary = place.structured_formatting?.secondary_text;
                 const active = i === activeIndex;
                 return (
                   <ListItemButton
@@ -292,12 +315,10 @@ const LocationModal = ({ open, onLocationSelect }) => {
                       primaryTypographyProps={{
                         fontSize: 14,
                         fontWeight: 700,
-                        
                         color: T.textPrimary,
                       }}
                       secondaryTypographyProps={{
                         fontSize: 12.5,
-                        
                         color: T.textSecondary,
                       }}
                     />
@@ -311,14 +332,14 @@ const LocationModal = ({ open, onLocationSelect }) => {
         {showEmptyState && (
           <Typography
             variant="body2"
-            sx={{ color: T.textFaint, textAlign: "center", mt: 2.5,  }}
+            sx={{ color: T.textFaint, textAlign: "center", mt: 2.5 }}
           >
             No matches for "{query}". Try a different spelling or a nearby landmark.
           </Typography>
         )}
 
         <Divider sx={{ my: 2.5, borderColor: T.border }}>
-          <Typography variant="caption" sx={{ color: T.textFaint,  px: 1 }}>
+          <Typography variant="caption" sx={{ color: T.textFaint, px: 1 }}>
             or
           </Typography>
         </Divider>
@@ -334,7 +355,6 @@ const LocationModal = ({ open, onLocationSelect }) => {
             borderRadius: "999px",
             border: `1.5px solid ${T.ink}`,
             color: T.ink,
-            
             fontWeight: 700,
             fontSize: 14,
             cursor: locating ? "default" : "pointer",

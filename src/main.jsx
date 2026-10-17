@@ -6,7 +6,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import './index.css'
 import App from './App'
 import theme from './theme/theme';
-import "leaflet/dist/leaflet.css";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const queryClient = new QueryClient({
