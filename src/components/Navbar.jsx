@@ -26,7 +26,6 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import useAuthStore from "../store/authStore";
 import { useGetProfile } from "../hooks/useGetProfile";
-import mzdlogo from '../assets/images/mzdlogo.png'
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -68,31 +67,14 @@ const Navbar = () => {
       }}>
 
 
-        <Box
-          component={Link}
-          to="/"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            textDecoration: "none",
-            ml: "-20px"
-          }}
-        >
-          <Box
-            component="img"
-            src={mzdlogo}
-            alt="MyZoneDeals"
-            sx={{
-              width: { xs: 40 },
-              height: "auto",
-              display: "block",
-            }}
-          />
-        </Box>
+
+        <LocalOfferIcon
+          sx={{ color: "#F4A261", fontSize: { xs: 18, md: 24, marginRight: 6 } }}
+        />
 
         <Typography
           sx={{
-            fontFamily: '"Potta One", system-ui',
+            fontFamily: "Righteous, sans-serif",
             fontSize: "18px",
             color: "#F4A261",
             ml: "-10px"
