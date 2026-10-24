@@ -5,6 +5,7 @@ import {
 } from '@vis.gl/react-google-maps';
 import { useDirections } from '../hooks/useDirections';
 import { CLEAN_MAP_STYLES } from '../styles/mapStyles';
+import { MOBILE_SHEET_HEIGHT } from '../styles/mobileSheet';
 
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
@@ -326,7 +327,8 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
           position: 'relative',
           width: '100%',
           maxWidth: 540,
-          maxHeight: '90vh',
+          height: MOBILE_SHEET_HEIGHT,
+          maxHeight: MOBILE_SHEET_HEIGHT,
           margin: '0 auto',
           background: T.surface,
           borderRadius: '24px 24px 0 0',
@@ -406,7 +408,7 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
         </div>
 
         {/* Interactive Map Preview with Polyline Route */}
-        <div style={{ position: 'relative', width: '100%', height: 260, background: '#e2e8f0' }}>
+        <div style={{ position: 'relative', width: '100%', flex: '1 1 260px', minHeight: 180, background: '#e2e8f0' }}>
           <Map
             defaultCenter={center}
             defaultZoom={14}
@@ -464,7 +466,7 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
         </div>
 
         {/* Details & Action Controls */}
-        <div style={{ padding: '16px 20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ padding: '16px 20px 22px', display: 'flex', flexDirection: 'column', gap: 14, flex: '0 1 auto', overflowY: 'auto' }}>
           {permissionDenied && (
             <div
               style={{
@@ -556,37 +558,6 @@ const DirectionsModal = ({ open, onClose, shopLat, shopLng, shopName }) => {
             ))}
           </div>
 
-          {/* Open in Google Maps */}
-          <a
-            href={googleMapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="dm-gmaps-btn"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              textDecoration: 'none',
-              background: 'linear-gradient(135deg, #1a73e8 0%, #1557b0 100%)',
-              color: '#fff',
-              borderRadius: 12,
-              padding: '13px 18px',
-              fontWeight: 700,
-              fontSize: 14,
-              boxShadow: '0 4px 16px rgba(26,115,232,0.35)',
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-                fill="#fff"
-              />
-              <circle cx="12" cy="9" r="2.5" fill="#1a73e8" />
-            </svg>
-            Start Turn-by-Turn in Google Maps
-            <OpenInNewIcon sx={{ fontSize: 16, opacity: 0.85 }} />
-          </a>
         </div>
       </div>
     </div>

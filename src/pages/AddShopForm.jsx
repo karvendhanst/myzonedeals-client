@@ -276,7 +276,7 @@ export default function AddShopForm() {
               }
             });
           } else {
-            const apiKey = import.meta.env.GOOGLE_MAPS_API_KEY;
+            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
             if (apiKey) {
               const res = await fetch(
                 `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(

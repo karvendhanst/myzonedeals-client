@@ -11,7 +11,6 @@ import {
   SwipeableDrawer,
   useMediaQuery,
   useTheme,
-  GlobalStyles,
   Typography,
 } from "@mui/material";
 import DealDetailPanel from "../components/DealDetailPanel";
@@ -21,6 +20,7 @@ import { PinMarkerContent } from "../components/pinIcon";
 import CustomOverlay from "../components/CustomOverlay";
 import LocationModal from "../components/LocationModal";
 import { useGetMapDeals } from "../hooks/useGetMapDeals";
+import { MOBILE_SHEET_HEIGHT } from "../styles/mobileSheet";
 
 const DRAWER_BLEEDING = 70;
 
@@ -188,9 +188,6 @@ const Home = () => {
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-  console.log("ttt", apiKey);
-
-
   // Fullscreen toggle
   const toggleFullscreen = useCallback(() => {
     const el = mapBoxRef.current;
@@ -253,17 +250,6 @@ const Home = () => {
           position: "relative",
         }}
       >
-        <GlobalStyles
-          styles={{
-            ".MuiDrawer-root > .MuiPaper-root": {
-              height: `calc(85% - ${DRAWER_BLEEDING}px)`,
-              overflow: "visible",
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-            },
-          }}
-        />
-
         {/* DESKTOP SIDEBAR */}
         {!isMobile && (
           <Box
@@ -297,6 +283,8 @@ const Home = () => {
             ModalProps={{ keepMounted: true }}
             sx={{
               "& .MuiDrawer-paper": {
+                height: `calc(${MOBILE_SHEET_HEIGHT} - ${DRAWER_BLEEDING}px)`,
+                overflow: "visible",
                 borderTopLeftRadius: 24,
                 borderTopRightRadius: 24,
                 boxShadow: "0 -8px 32px rgba(0,0,0,0.12)",

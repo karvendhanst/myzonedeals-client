@@ -84,7 +84,7 @@ export function useDirections(shopLat, shopLng, mode = 'DRIVE') {
       setRouteLoading(true);
       setError(null);
 
-      const apiKey = import.meta.env.GOOGLE_MAPS_API_KEY;
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
       const travelMode = mode === 'WALK' ? 'WALK' : 'DRIVE';
 
       try {
